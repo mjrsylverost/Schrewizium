@@ -1,0 +1,77 @@
+{
+  "users": {
+    "sylverostum": {
+      "username": "sylverostum",
+      "display_name": "sylverostum",
+      "status": "Online",
+      "pfp": "",
+      "bio": "",
+      "esf": 2500,
+      "password": "Sylverost"
+    }
+  },
+  "posts": {},
+  "dms": {},
+  "groups": {
+    "hearth-general": {
+      "id": "hearth-general",
+      "name": "hearth-general",
+      "topic": "Winter parlour hall. Try ||spoilers||, polls, reactions, and @mentions.",
+      "visibility": "public",
+      "invite_code": "HEARTH26",
+      "slowmode": 0,
+      "owner": "System",
+      "members": [
+        "Anonymous"
+      ],
+      "pinned": [],
+      "polls": [],
+      "messages": [
+        {
+          "author": "Anonymous",
+          "body": "hey",
+          "reply_to": null,
+          "silent": false,
+          "reactions": {
+            "\ud83d\ude02": [],
+            "\ud83d\udd25": [
+              "Anonymous"
+            ]
+          },
+          "edited": false,
+          "created_at": "2026-11-20T06:42:13.277765+00:00"
+        }
+      ],
+      "created_at": "2026-11-20T05:43:11.215291+00:00"
+    }
+  },
+  "games": {},
+  "rooms": {
+    "public-ttt-hall": {
+      "id": "public-ttt-hall",
+      "name": "Public Parlour Lobby",
+      "game": "tictactoe",
+      "visibility": "public",
+      "code": "PUB101",
+      "host": "System",
+      "players": [
+        "Anonymous"
+      ],
+      "invited": [],
+      "board": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "turn": "X",
+      "winner": null,
+      "created_at": "2026-11-20T07:02:44.679739+00:00"
+    }
+  }
+}
