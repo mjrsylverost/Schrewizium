@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Schrewizium</title>
+  <style>
+    :root {
+      --bg-darkest: #111214;
+      --bg-channels: #2b2d31;
+      --bg-chat: #313338;
+      --bg-card: #232428;
+      --bg-input: #383a40;
+      --bg-hover: #35373c;
+      --bg-selected: #404249;
+      --text-normal: #dbdee1;
+      --text-muted: #949ba4;
+      --brand: #5865f2;
+      --brand-hover: #4752c4;
+      --green: #23a55a;
+      --yellow: #f0b232;
+      --red: #ed4245;
+      --offline: #80848e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", system-ui, sans-serif; }
+    body { background: var(--bg-darkest); color: var(--text-normal); height: 100vh; overflow: hidden; display: flex; }
+
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+    .st-online { background: var(--green); }
+    .st-idle { background: var(--yellow); }
+    .st-dnd { background: var(--red); }
+    .st-offline { background: var(--offline); }
+
+    .red-dot {
+      width: 9px; height: 9px; border-radius: 50%; background: var(--red);
+      display: inline-block; box-shadow: 0 0 6px var(--red); flex-shrink: 0;
+    }
+
+    .avatar {
+      width: 34px; height: 34px; border-radius: 50%; background: var(--brand);
+      display: flex; align-items: center; justify-content: center; font-weight: 700;
+      color: #fff; font-size: 14px; overflow: hidden; flex-shrink: 0; cursor: pointer;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+    .app-shell { display: flex; width: 100%; height: 100vh; }
+    .nav-rail {
+      width: 245px; background: var(--bg-channels); display: flex; flex-direction: column;
+      border-right: 1px solid #1f2023;
+    }
+    .brand-bar {
+      padding: 14px 16px; font-weight: 800; font-size: 15px; letter-spacing: 0.5px;
+      border-bottom: 1px solid #1f2023; display: flex; justify-content: space-between; align-items: center;
+    }
+    .nav-scroll { flex: 1; overflow-y: auto; padding: 10px 8px; }
+    .nav-section-title {
+      font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted);
+      padding: 10px 8px 4px; display: flex; justify-content: space-between; align-items: center;
+    }
+    .nav-item {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      padding: 7px 10px; border-radius: 6px; cursor: pointer; color: var(--text-muted);
+      font-size: 14px; margin-bottom: 2px;
+    }
+    .nav-item:hover { background: var(--bg-hover); color: var(--text-normal); }
+    .nav-item.active { background: var(--bg-selected); color: #fff; font-weight: 600; }
+    .nav-item-left { display: flex; align-items: center; gap: 8px; overflow: hidden; }
+    .nav-item-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .me-bar {
+      background: #232428; padding: 10px; display: flex; align-items: center; justify-content: space-between;
+      border-top: 1px solid #1a1b1e;
+    }
+    .me-info { display: flex; align-items: center; gap: 8px; cursor: pointer; overflow: hidden; }
+    .me-name { font-size: 13px; font-weight: 700; color: #fff; }
+    .me-sub { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+
+    .main-area { flex: 1; background: var(--bg-chat); display: flex; flex-direction: column; min-width: 0; }
+    .top-header {
+      height: 50px; padding: 0 16px; border-bottom: 1px solid #26272b;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .header-title { font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+    .badge-public { font-size: 11px; background: #23a55a22; color: var(--green); padding: 2px 7px; border-radius: 4px; }
+    .badge-private { font-size: 11px; background: #5865f222; color: #99a3ff; padding: 2px 7px; border-radius: 4px; }
+
+    .scroll-pane { padding: 20px; overflow-y: auto; flex: 1; }
+    .friend-search-wrap { position: relative; max-width: 480px; margin-bottom: 20px; }
+    .input-box {
+      width: 100%; background: var(--bg-input); border: 1px solid #222327; color: #fff;
+      padding: 10px 12px; border-radius: 6px; font-size: 14px; outline: none;
+    }
+    .input-box:focus { border-color: var(--brand); }
+    .search-popout {
+      position: absolute; top: 44px; left: 0; right: 0; background: #1e1f22;
+      border: 1px solid #3f4147; border-radius: 8px; z-index: 50; max-height: 260px; overflow-y: auto;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    }
+    .popout-row {
+      display: flex; align-items: center; justify-content: space-between; padding: 9px 12px;
+      border-bottom: 1px solid #2b2d31; background: var(--bg-card); border-radius: 6px; margin-bottom: 6px;
+    }
+
+    .chat-body { display: flex; flex: 1; min-height: 0; }
+    .messages-col { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    .messages-list { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .msg-card {
+      display: flex; gap: 12px; padding: 6px 10px; border-radius: 6px; position: relative;
+    }
+    .msg-card:hover { background: #2e3035; }
+    .msg-card:hover .msg-actions { display: flex; }
+    .msg-content { flex: 1; min-width: 0; }
+    .msg-header { display: flex; align-items: baseline; gap: 8px; }
+    .msg-author { font-weight: 700; font-size: 14px; color: #fff; cursor: pointer; }
+    .msg-author:hover { text-decoration: underline; }
+    .msg-time { font-size: 11px; color: var(--text-muted); }
+    .msg-text { font-size: 14px; line-height: 1.45; margin-top: 2px; word-break: break-word; }
+    .mention-pill { background: #5865f233; color: #c9cdfb; padding: 0 4px; border-radius: 4px; font-weight: 600; cursor: pointer; }
+    .reply-quote {
+      font-size: 12px; color: var(--text-muted); border-left: 3px solid var(--brand);
+      padding-left: 8px; margin-bottom: 4px;
+    }
+    .msg-actions {
+      display: none; position: absolute; right: 10px; top: -10px; background: #2b2d31;
+      border: 1px solid #1f2023; border-radius: 6px; overflow: hidden;
+    }
+    .msg-actions button {
+      background: none; border: none; color: var(--text-normal); padding: 4px 8px;
+      font-size: 12px; cursor: pointer;
+    }
+    .msg-actions button:hover { background: var(--bg-hover); }
+
+    .composer-wrap { padding: 0 16px 16px; position: relative; }
+    .reply-banner {
+      background: #2b2d31; padding: 6px 12px; border-radius: 6px 6px 0 0; font-size: 12px;
+      color: var(--text-muted); display: flex; justify-content: space-between; align-items: center;
+    }
+    .typing-bar { height: 18px; font-size: 12px; color: var(--text-muted); padding: 0 4px 4px; }
+    .mention-popup {
+      position: absolute; bottom: 68px; left: 16px; width: 280px; background: #1e1f22;
+      border: 1px solid #3f4147; border-radius: 8px; z-index: 60; overflow: hidden;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+    }
+    .mention-option {
+      display: flex; align-items: center; gap: 8px; padding: 8px 10px; cursor: pointer; font-size: 13px;
+    }
+    .mention-option:hover, .mention-option.selected { background: var(--brand); color: #fff; }
+
+    .members-rail {
+      width: 210px; background: var(--bg-channels); border-left: 1px solid #1f2023;
+      padding: 12px 8px; overflow-y: auto;
+    }
+
+    .board-card {
+      background: var(--bg-card); border: 1px solid #1e1f22; border-radius: 8px;
+      padding: 14px; margin-bottom: 12px;
+    }
+    .poll-opt {
+      display: flex; justify-content: space-between; align-items: center;
+      background: #2b2d31; padding: 8px 12px; border-radius: 6px; margin-top: 6px; cursor: pointer;
+    }
+    .poll-opt:hover { background: var(--bg-hover); }
+    .poll-opt.voted { border: 1px solid var(--brand); }
+
+    .btn {
+      background: var(--brand); color: #fff; border: none; padding: 7px 12px;
+      border-radius: 5px; font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .btn:hover { background: var(--brand-hover); }
+    .btn-sm { padding: 4px 9px; font-size: 12px; }
+    .btn-green { background: var(--green); }
+    .btn-red { background: var(--red); }
+    .btn-ghost { background: #383a40; }
+
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0, 0, 0, 0.72); display: flex;
+      align-items: center; justify-content: center; z-index: 100;
+    }
+    .modal-card {
+      background: #2b2d31; border-radius: 10px; padding: 22px; width: 390px; max-width: 92vw;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; gap: 12px;
+    }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div id="authModal" class="modal-backdrop">
+    <div class="modal-card">
+      <h2>Schrewizium</h2>
+      <p style="font-size:13px;color:var(--text-muted);">Choose a username with no spaces (letters, numbers, "_" or ".").</p>
+      <input id="authUsername" class="input-box" placeholder="e.g. sylverost" maxlength="20" />
+      <input id="authAvatar" class="input-box" placeholder="Avatar URL (optional)" />
+      <input id="authBio" class="input-box" placeholder="Short bio (optional)" />
+      <div id="authError" style="color:var(--red);font-size:12px;"></div>
+      <button class="btn" onclick="submitAuth()">Enter</button>
+    </div>
+  </div>
+
+  <div id="profileModal" class="modal-backdrop hidden" onclick="if (event.target === this) closeModal('profileModal')">
+    <div class="modal-card" id="profileModalBody"></div>
+  </div>
+
+  <div id="accountModal" class="modal-backdrop hidden" onclick="if (event.target === this) closeModal('accountModal')">
+    <div class="modal-card">
+      <h3>Account &amp; Status</h3>
+      <input id="editUsername" class="input-box" placeholder="Username (no spaces)" maxlength="20" />
+      <select id="editStatus" class="input-box">
+        <option value="online">Online</option>
+        <option value="idle">Idle</option>
+        <option value="dnd">Do Not Disturb</option>
+        <option value="offline">Offline / Invisible</option>
+      </select>
+      <input id="editCustomStatus" class="input-box" placeholder="Custom status..." maxlength="60" />
+      <input id="editAvatar" class="input-box" placeholder="Avatar URL (https://...)" />
+      <textarea id="editBio" class="input-box" rows="2" placeholder="Bio..." maxlength="200"></textarea>
+      <div id="profileError" style="color:var(--red);font-size:12px;"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button class="btn btn-red" onclick="logoutUser()">Logout</button>
+        <button class="btn btn-ghost" onclick="closeModal('accountModal')">Cancel</button>
+        <button class="btn" onclick="saveProfile()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="createGcModal" class="modal-backdrop hidden" onclick="if (event.target === this) closeModal('createGcModal')">
+    <div class="modal-card">
+      <h3>Create Group Chat</h3>
+      <input id="gcNameInput" class="input-box" placeholder="Group chat name" maxlength="30" />
+      <label style="font-size:13px;display:flex;align-items:center;gap:8px;">
+        <input type="checkbox" id="gcPublicCheck" onchange="toggleGcFriendPicker()" />
+        Public GC (pinning disabled)
+      </label>
+      <div id="gcFriendPicker" style="max-height:140px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button class="btn btn-ghost" onclick="closeModal('createGcModal')">Cancel</button>
+        <button class="btn" onclick="createGc()">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="pinsModal" class="modal-backdrop hidden" onclick="if (event.target === this) closeModal('pinsModal')">
+    <div class="modal-card" style="width:460px;">
+      <h3>Pinned Messages</h3>
+      <div id="pinsList" style="max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;"></div>
+      <button class="btn btn-ghost" onclick="closeModal('pinsModal')">Close</button>
+    </div>
+  </div>
+
+  <div class="app-shell">
+    <aside class="nav-rail">
+      <div class="brand-bar"><span>SCHREWIZIUM</span></div>
+      <div class="nav-scroll">
+        <div id="navFriends" class="nav-item active" onclick="openView('friends','friends')">
+          <div class="nav-item-left"><span>Friends</span></div>
+          <span id="friendsRedDot" class="red-dot hidden"></span>
+        </div>
+        <div id="navBulletin" class="nav-item" onclick="openView('bulletin','bulletin')">
+          <div class="nav-item-left"><span>Bulletin Board</span></div>
+        </div>
+        <div id="navPolls" class="nav-item" onclick="openView('polls','polls')">
+          <div class="nav-item-left"><span>Polls</span></div>
+        </div>
+
+        <div class="nav-section-title">
+          <span>Group Chats</span>
+          <button class="btn btn-sm btn-ghost" onclick="openCreateGcModal()">+</button>
+        </div>
+        <div id="gcNavList"></div>
+
+        <div class="nav-section-title"><span>Direct Messages</span></div>
+        <div id="dmNavList"></div>
+      </div>
+
+      <div class="me-bar">
+        <div class="me-info" onclick="openAccountModal()">
+          <div id="meAvatar" class="avatar">?</div>
+          <div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span id="meUsername" class="me-name">...</span>
+              <span id="meStatusDot" class="status-dot st-online"></span>
+            </div>
+            <div id="meCustomStatus" class="me-sub">Edit profile</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <header class="top-header">
+        <div id="headerTitle" class="header-title">Friends</div>
+        <div id="headerControls"></div>
+      </header>
+
+      <section id="friendsPane" class="scroll-pane">
+        <h4 style="margin-bottom:8px;">Add Friend</h4>
+        <div class="friend-search-wrap">
+          <input id="friendSearchInput" class="input-box" placeholder="Type username (no spaces)..." oninput="searchUsersLive()" />
+          <div id="friendSearchPopout" class="search-popout hidden"></div>
+        </div>
+
+        <div id="incomingSection" class="hidden" style="margin-bottom:18px;">
+          <h4 style="margin-bottom:8px;color:var(--yellow);">Incoming Requests</h4>
+          <div id="incomingList"></div>
+        </div>
+
+        <div id="outgoingSection" class="hidden" style="margin-bottom:18px;">
+          <h4 style="margin-bottom:8px;color:var(--text-muted);">Sent Requests</h4>
+          <div id="outgoingList"></div>
+        </div>
+
+        <h4 style="margin-bottom:8px;">Friends</h4>
+        <div id="friendsList"></div>
+      </section>
+
+      <section id="bulletinPane" class="scroll-pane hidden">
+        <div class="board-card">
+          <h4 style="margin-bottom:8px;">New Bulletin Post</h4>
+          <input id="bullTitle" class="input-box" placeholder="Post title" style="margin-bottom:8px;" />
+          <textarea id="bullBody" class="input-box" rows="2" placeholder="Write announcement or post..." style="margin-bottom:8px;"></textarea>
+          <button class="btn" onclick="submitBulletin()">Publish Post</button>
+        </div>
+        <div id="bulletinList"></div>
+      </section>
+
+      <section id="pollsPane" class="scroll-pane hidden">
+        <div class="board-card">
+          <h4 style="margin-bottom:8px;">Create Poll</h4>
+          <input id="pollQuestion" class="input-box" placeholder="Ask a question..." style="margin-bottom:8px;" />
+          <input id="pollOptions" class="input-box" placeholder="Options separated by commas (e.g. Option A, Option B, Option C)" style="margin-bottom:8px;" />
+          <button class="btn" onclick="submitPoll()">Create Poll</button>
+        </div>
+        <div id="pollsList"></div>
+      </section>
+
+      <section id="chatPane" class="chat-body hidden">
+        <div class="messages-col">
+          <div id="messagesList" class="messages-list"></div>
+          <div class="composer-wrap">
+            <div id="mentionPopup" class="mention-popup hidden"></div>
+            <div id="typingBar" class="typing-bar"></div>
+            <div id="replyBanner" class="reply-banner hidden">
+              <span id="replyBannerText"></span>
+              <button class="btn btn-sm btn-ghost" onclick="clearReply()">x</button>
+            </div>
+            <input id="msgInput" class="input-box" placeholder="Message..." onkeydown="handleMsgKeydown(event)" oninput="handleMsgInput()" />
+          </div>
+        </div>
+        <aside id="membersRail" class="members-rail"></aside>
+      </section>
+    </main>
+  </div>
+
+<script>
+  let stateCache = null;
+  let activeView = { kind: "friends", target_id: "friends" };
+  let replyToId = null;
+  let lastTypingSent = 0;
+  let mentionMatches = [];
+  let mentionIndex = 0;
+
+  function sanitizeNoSpaces(el) {
+    el.value = el.value.replace(/\s+/g, "");
+  }
+
+  document.getElementById("authUsername").addEventListener("input", (e) => sanitizeNoSpaces(e.target));
+  document.getElementById("editUsername").addEventListener("input", (e) => sanitizeNoSpaces(e.target));
+  document.getElementById("friendSearchInput").addEventListener("input", (e) => sanitizeNoSpaces(e.target));
+
+  function openModal(id) {
+    document.getElementById(id).classList.remove("hidden");
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.add("hidden");
+  }
+
+  function escapeHtml(value) {
+    return String(value || "").replace(/[&<>"']/g, (ch) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    }[ch]));
+  }
+
+  function renderAvatarHTML(user, size = 34) {
+    const letter = (user.username || "?")[0].toUpperCase();
+    if (user.avatar) {
+      return `<div class="avatar" style="width:${size}px;height:${size}px;" onclick="openUserProfile('${user.id}')"><img src="${escapeHtml(user.avatar)}" onerror="this.remove()" /></div>`;
+    }
+    return `<div class="avatar" style="width:${size}px;height:${size}px;" onclick="openUserProfile('${user.id}')">${letter}</div>`;
+  }
+
+  function formatMessageText(text) {
+    return escapeHtml(text).replace(/@([a-zA-Z0-9_.]{2,20})/g, (_, uname) =>
+      `<span class="mention-pill" onclick="openProfileByUsername('${uname}')">@${uname}</span>`
+    );
+  }
+
+  async function submitAuth() {
+    const username = document.getElementById("authUsername").value.trim();
+    const avatar = document.getElementById("authAvatar").value.trim();
+    const bio = document.getElementById("authBio").value.trim();
+    const res = await fetch("/api/auth", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, avatar, bio })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      document.getElementById("authError").textContent = data.error || "Sign in failed.";
+      return;
+    }
+    closeModal("authModal");
+    await syncNow(true);
+  }
+
+  async function logoutUser() {
+    await fetch("/api/logout", { method: "POST" });
+    window.location.reload();
+  }
+
+  function openAccountModal() {
+    if (!stateCache || !stateCache.me) return;
+    const me = stateCache.me;
+    document.getElementById("editUsername").value = me.username;
+    document.getElementById("editStatus").value = me.status || "online";
+    document.getElementById("editCustomStatus").value = me.custom_status || "";
+    document.getElementById("editAvatar").value = me.avatar || "";
+    document.getElementById("editBio").value = me.bio || "";
+    document.getElementById("profileError").textContent = "";
+    openModal("accountModal");
+  }
+
+  async function saveProfile() {
+    const res = await fetch("/api/profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: document.getElementById("editUsername").value,
+        status: document.getElementById("editStatus").value,
+        custom_status: document.getElementById("editCustomStatus").value,
+        avatar: document.getElementById("editAvatar").value,
+        bio: document.getElementById("editBio").value
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      document.getElementById("profileError").textContent = data.error || "Could not save profile.";
+      return;
+    }
+    closeModal("accountModal");
+    await syncNow();
+  }
+
+  function openProfileByUsername(uname) {
+    if (!stateCache) return;
+    const found = Object.values(stateCache.users).find((u) => u.username.toLowerCase() === uname.toLowerCase());
+    if (found) openUserProfile(found.id);
+  }
+
+  function openUserProfile(uid) {
+    if (!stateCache || !stateCache.users[uid]) return;
+    const target = stateCache.users[uid];
+    const me = stateCache.me;
+    const isFriend = stateCache.friends.some((f) => f.id === uid);
+    let actionButton = "";
+    if (uid !== me.id) {
+      actionButton = isFriend
+        ? `<button class="btn" onclick="closeModal('profileModal');openView('dm','${uid}')">Message</button>`
+        : `<button class="btn btn-green" onclick="sendFriendRequest('${target.username}');closeModal('profileModal')">Add Friend</button>`;
+    }
+    document.getElementById("profileModalBody").innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px;">
+        ${renderAvatarHTML(target, 52)}
+        <div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:17px;font-weight:700;">
+            <span>@${escapeHtml(target.username)}</span><span class="status-dot st-${target.status}"></span>
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);">${escapeHtml(target.custom_status || target.status)}</div>
+        </div>
+      </div>
+      <div style="background:#1e1f22;padding:10px;border-radius:6px;font-size:13px;">${escapeHtml(target.bio || "No bio set.")}</div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;">
+        ${actionButton}<button class="btn btn-ghost" onclick="closeModal('profileModal')">Close</button>
+      </div>
+    `;
+    openModal("profileModal");
+  }
+
+  async function searchUsersLive() {
+    const q = document.getElementById("friendSearchInput").value.trim();
+    const pop = document.getElementById("friendSearchPopout");
+    if (!q) {
+      pop.classList.add("hidden");
+      return;
+    }
+    const res = await fetch("/api/users/search?q=" + encodeURIComponent(q));
+    const data = await res.json();
+    pop.innerHTML = data.results.length
+      ? data.results.map((u) => {
+          let action = `<button class="btn btn-sm btn-green" onclick="sendFriendRequest('${u.username}')">Add Friend</button>`;
+          if (u.relation === "friend") action = `<button class="btn btn-sm" onclick="openView('dm','${u.id}')">Message</button>`;
+          if (u.relation === "outgoing") action = `<span style="font-size:12px;color:var(--text-muted);">Pending</span>`;
+          if (u.relation === "incoming") action = `<button class="btn btn-sm btn-green" onclick="respondRequest('${u.id}','accept')">Accept</button>`;
+          return `<div class="popout-row" style="margin-bottom:0;border-radius:0;">
+            <div style="display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="openUserProfile('${u.id}')">
+              ${renderAvatarHTML(u, 28)}<span>@${escapeHtml(u.username)}</span><span class="status-dot st-${u.status}"></span>
+            </div>${action}</div>`;
+        }).join("")
+      : `<div class="popout-row" style="margin-bottom:0;color:var(--text-muted);font-size:13px;">No matching user</div>`;
+    pop.classList.remove("hidden");
+  }
+
+  async function sendFriendRequest(username) {
+    await fetch("/api/friends/request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username })
+    });
+    document.getElementById("friendSearchPopout").classList.add("hidden");
+    document.getElementById("friendSearchInput").value = "";
+    await syncNow();
+  }
+
+  async function respondRequest(userId, action) {
+    await fetch("/api/friends/respond", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: userId, action })
+    });
+    await syncNow();
+  }
+
+  function openCreateGcModal() {
+    if (!stateCache) return;
+    document.getElementById("gcNameInput").value = "";
+    document.getElementById("gcPublicCheck").checked = false;
+    const picker = document.getElementById("gcFriendPicker");
+    picker.classList.remove("hidden");
+    picker.innerHTML = stateCache.friends.length
+      ? stateCache.friends.map((f) =>
+          `<label style="font-size:13px;display:flex;align-items:center;gap:8px;"><input type="checkbox" class="gc-member-cb" value="${f.id}" />@${escapeHtml(f.username)}</label>`
+        ).join("")
+      : '<span style="font-size:12px;color:var(--text-muted);">Add friends first to invite them to a private GC.</span>';
+    openModal("createGcModal");
+  }
+
+  function toggleGcFriendPicker() {
+    document.getElementById("gcFriendPicker").classList.toggle("hidden", document.getElementById("gcPublicCheck").checked);
+  }
+
+  async function createGc() {
+    const name = document.getElementById("gcNameInput").value.trim();
+    const isPublic = document.getElementById("gcPublicCheck").checked;
+    const members = Array.from(document.querySelectorAll(".gc-member-cb:checked")).map((cb) => cb.value);
+    const res = await fetch("/api/gcs/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, is_public: isPublic, members })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      closeModal("createGcModal");
+      await openView("gc", data.gc_id);
+    }
+  }
+
+  async function openView(kind, targetId) {
+    activeView = { kind, target_id: targetId };
+    clearReply();
+    document.getElementById("mentionPopup").classList.add("hidden");
+    if (kind === "dm" || kind === "gc") {
+      await fetch("/api/read", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind, target_id: targetId })
+      });
+    }
+    await syncNow(true);
+  }
+
+  function setReply(msgId, author, text) {
+    replyToId = msgId;
+    document.getElementById("replyBannerText").textContent = `Replying to @${author}: ${String(text).slice(0, 50)}`;
+    document.getElementById("replyBanner").classList.remove("hidden");
+    document.getElementById("msgInput").focus();
+  }
+
+  function clearReply() {
+    replyToId = null;
+    document.getElementById("replyBanner").classList.add("hidden");
+  }
+
+  function handleMsgInput() {
+    const input = document.getElementById("msgInput");
+    const now = Date.now();
+    if (now - lastTypingSent > 1500 && (activeView.kind === "dm" || activeView.kind === "gc")) {
+      lastTypingSent = now;
+      fetch("/api/typing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind: activeView.kind, target_id: activeView.target_id, typing: true })
+      });
+    }
+
+    const popup = document.getElementById("mentionPopup");
+    if (activeView.kind !== "gc" || !stateCache || !stateCache.active) {
+      popup.classList.add("hidden");
+      return;
+    }
+    const before = input.value.slice(0, input.selectionStart);
+    const match = before.match(/(?:^|\s)@([a-zA-Z0-9_.]*)$/);
+    if (!match) {
+      popup.classList.add("hidden");
+      mentionMatches = [];
+      return;
+    }
+    const q = match[1].toLowerCase();
+    mentionMatches = stateCache.active.members.filter((m) => m.username.toLowerCase().startsWith(q));
+    if (!mentionMatches.length) {
+      popup.classList.add("hidden");
+      return;
+    }
+    mentionIndex = 0;
+    renderMentionPopup();
+  }
+
+  function renderMentionPopup() {
+    const popup = document.getElementById("mentionPopup");
+    popup.innerHTML = mentionMatches.map((m, idx) =>
+      `<div class="mention-option ${idx === mentionIndex ? "selected" : ""}" onclick="insertMention('${m.username}')">
+        <span class="status-dot st-${m.status}"></span><span>@${escapeHtml(m.username)}</span>
+      </div>`
+    ).join("");
+    popup.classList.remove("hidden");
+  }
+
+  function insertMention(username) {
+    const input = document.getElementById("msgInput");
+    const cursor = input.selectionStart;
+    input.value = input.value.slice(0, cursor).replace(/@([a-zA-Z0-9_.]*)$/, `@${username} `) + input.value.slice(cursor);
+    document.getElementById("mentionPopup").classList.add("hidden");
+    mentionMatches = [];
+    input.focus();
+  }
+
+  async function handleMsgKeydown(e) {
+    const popup = document.getElementById("mentionPopup");
+    if (!popup.classList.contains("hidden") && mentionMatches.length) {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        mentionIndex = (mentionIndex + 1) % mentionMatches.length;
+        renderMentionPopup();
+        return;
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        mentionIndex = (mentionIndex - 1 + mentionMatches.length) % mentionMatches.length;
+        renderMentionPopup();
+        return;
+      }
+      if (e.key === "Enter" || e.key === "Tab") {
+        e.preventDefault();
+        insertMention(mentionMatches[mentionIndex].username);
+        return;
+      }
+    }
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      await sendMessage();
+    }
+  }
+
+  async function sendMessage() {
+    const input = document.getElementById("msgInput");
+    const text = input.value.trim();
+    if (!text || (activeView.kind !== "dm" && activeView.kind !== "gc")) return;
+    input.value = "";
+    const currentReply = replyToId;
+    clearReply();
+    await fetch("/api/messages/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        kind: activeView.kind,
+        target_id: activeView.target_id,
+        text,
+        reply_to: currentReply
+      })
+    });
+    await syncNow(true);
+  }
+
+  async function editMessagePrompt(msgId, oldText) {
+    const next = window.prompt("Edit message:", oldText);
+    if (next === null || !next.trim()) return;
+    await fetch("/api/messages/edit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        kind: activeView.kind,
+        target_id: activeView.target_id,
+        msg_id: msgId,
+        text: next.trim()
+      })
+    });
+    await syncNow();
+  }
+
+  async function deleteMessage(msgId) {
+    await fetch("/api/messages/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        kind: activeView.kind,
+        target_id: activeView.target_id,
+        msg_id: msgId
+      })
+    });
+    await syncNow();
+  }
+
+  async function togglePin(msgId) {
+    const res = await fetch("/api/gcs/pin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ gc_id: activeView.target_id, msg_id: msgId })
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      window.alert(data.error || "Cannot pin this message.");
+    }
+    await syncNow();
+  }
+
+  function openPinsModal() {
+    if (!stateCache || !stateCache.active) return;
+    const pins = stateCache.active.pins || [];
+    document.getElementById("pinsList").innerHTML = pins.length
+      ? pins.map((p) => `<div style="background:#1e1f22;padding:8px;border-radius:6px;"><strong>@${escapeHtml(p.author_username)}</strong>: ${formatMessageText(p.text)}</div>`).join("")
+      : '<div style="color:var(--text-muted);font-size:13px;">No pinned messages.</div>';
+    openModal("pinsModal");
+  }
+
+  async function submitBulletin() {
+    const title = document.getElementById("bullTitle").value.trim();
+    const body = document.getElementById("bullBody").value.trim();
+    const res = await fetch("/api/bulletin/post", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title, body })
+    });
+    if (res.ok) {
+      document.getElementById("bullTitle").value = "";
+      document.getElementById("bullBody").value = "";
+      await syncNow();
+    }
+  }
+
+  async function deleteBulletin(postId) {
+    await fetch("/api/bulletin/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ post_id: postId })
+    });
+    await syncNow();
+  }
+
+  async function submitPoll() {
+    const question = document.getElementById("pollQuestion").value.trim();
+    const options = document.getElementById("pollOptions").value.split(",").map((s) => s.trim()).filter(Boolean);
+    const res = await fetch("/api/polls/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question, options })
+    });
+    if (res.ok) {
+      document.getElementById("pollQuestion").value = "";
+      document.getElementById("pollOptions").value = "";
+      await syncNow();
+    }
+  }
+
+  async function votePoll(pollId, optionId) {
+    await fetch("/api/polls/vote", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ poll_id: pollId, option_id: optionId })
+    });
+    await syncNow();
+  }
+
+  async function syncNow(scrollBottom = false) {
+    const res = await fetch(`/api/sync?kind=${encodeURIComponent(activeView.kind)}&target_id=${encodeURIComponent(activeView.target_id)}`);
+    const data = await res.json();
+    if (!data.authenticated) {
+      openModal("authModal");
+      return;
+    }
+    closeModal("authModal");
+    stateCache = data;
+    const me = data.me;
+
+    document.getElementById("meUsername").textContent = "@" + me.username;
+    document.getElementById("meCustomStatus").textContent = me.custom_status || me.status;
+    document.getElementById("meStatusDot").className = `status-dot st-${me.status}`;
+    const meAvatar = document.getElementById("meAvatar");
+    meAvatar.innerHTML = me.avatar ? `<img src="${escapeHtml(me.avatar)}" />` : me.username[0].toUpperCase();
+
+    document.getElementById("friendsRedDot").classList.toggle("hidden", data.incoming.length === 0);
+    document.getElementById("navFriends").classList.toggle("active", activeView.kind === "friends");
+    document.getElementById("navBulletin").classList.toggle("active", activeView.kind === "bulletin");
+    document.getElementById("navPolls").classList.toggle("active", activeView.kind === "polls");
+
+    document.getElementById("gcNavList").innerHTML = data.gcs.map((gc) => {
+      const isAct = activeView.kind === "gc" && activeView.target_id === gc.id;
+      const showDot = gc.mention_unread && !isAct;
+      return `<div class="nav-item ${isAct ? "active" : ""}" onclick="openView('gc','${gc.id}')">
+        <div class="nav-item-left"><span>#</span><span class="nav-item-label">${escapeHtml(gc.name)}</span></div>
+        ${showDot ? '<span class="red-dot"></span>' : ""}
+      </div>`;
+    }).join("");
+
+    document.getElementById("dmNavList").innerHTML = data.dms.map((dm) => {
+      const u = dm.user;
+      const isAct = activeView.kind === "dm" && activeView.target_id === u.id;
+      const showDot = dm.unread && !isAct;
+      return `<div class="nav-item ${isAct ? "active" : ""}" onclick="openView('dm','${u.id}')">
+        <div class="nav-item-left"><span class="status-dot st-${u.status}"></span><span class="nav-item-label">@${escapeHtml(u.username)}</span></div>
+        ${showDot ? '<span class="red-dot"></span>' : ""}
+      </div>`;
+    }).join("");
+
+    document.getElementById("friendsPane").classList.toggle("hidden", activeView.kind !== "friends");
+    document.getElementById("bulletinPane").classList.toggle("hidden", activeView.kind !== "bulletin");
+    document.getElementById("pollsPane").classList.toggle("hidden", activeView.kind !== "polls");
+    document.getElementById("chatPane").classList.toggle("hidden", activeView.kind !== "dm" && activeView.kind !== "gc");
+
+    if (activeView.kind === "friends") {
+      document.getElementById("headerTitle").textContent = "Friends";
+      document.getElementById("headerControls").innerHTML = "";
+
+      const incSec = document.getElementById("incomingSection");
+      incSec.classList.toggle("hidden", data.incoming.length === 0);
+      document.getElementById("incomingList").innerHTML = data.incoming.map((u) =>
+        `<div class="popout-row"><div style="display:flex;align-items:center;gap:8px;">${renderAvatarHTML(u, 30)}<strong>@${escapeHtml(u.username)}</strong></div>
+        <div style="display:flex;gap:6px;"><button class="btn btn-sm btn-green" onclick="respondRequest('${u.id}','accept')">Accept</button>
+        <button class="btn btn-sm btn-red" onclick="respondRequest('${u.id}','decline')">Ignore</button></div></div>`
+      ).join("");
+
+      const outSec = document.getElementById("outgoingSection");
+      outSec.classList.toggle("hidden", data.outgoing.length === 0);
+      document.getElementById("outgoingList").innerHTML = data.outgoing.map((u) =>
+        `<div class="popout-row"><div style="display:flex;align-items:center;gap:8px;">${renderAvatarHTML(u, 30)}<span>@${escapeHtml(u.username)}</span></div>
+        <span style="font-size:12px;color:var(--text-muted);">Pending</span></div>`
+      ).join("");
+
+      document.getElementById("friendsList").innerHTML = data.friends.length
+        ? data.friends.map((u) =>
+            `<div class="popout-row"><div style="display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="openUserProfile('${u.id}')">
+            ${renderAvatarHTML(u, 34)}<div><div style="display:flex;align-items:center;gap:6px;"><strong>@${escapeHtml(u.username)}</strong>
+            <span class="status-dot st-${u.status}"></span></div><div style="font-size:12px;color:var(--text-muted);">${escapeHtml(u.custom_status || u.status)}</div></div></div>
+            <button class="btn btn-sm" onclick="openView('dm','${u.id}')">Message</button></div>`
+          ).join("")
+        : '<div style="color:var(--text-muted);font-size:13px;">No friends yet.</div>';
+      return;
+    }
+
+    if (activeView.kind === "bulletin") {
+      document.getElementById("headerTitle").textContent = "Bulletin Board";
+      document.getElementById("headerControls").innerHTML = "";
+      document.getElementById("bulletinList").innerHTML = (data.bulletin || []).map((p) =>
+        `<div class="board-card"><div style="display:flex;justify-content:space-between;align-items:center;">
+        <strong>${escapeHtml(p.title)}</strong>
+        ${p.author_id === me.id ? `<button class="btn btn-sm btn-red" onclick="deleteBulletin('${p.id}')">Delete</button>` : ""}
+        </div><div style="font-size:12px;color:var(--text-muted);margin:4px 0 8px;">by @${escapeHtml(p.author_username)}</div>
+        <div style="font-size:14px;">${escapeHtml(p.body)}</div></div>`
+      ).join("");
+      return;
+    }
+
+    if (activeView.kind === "polls") {
+      document.getElementById("headerTitle").textContent = "Polls";
+      document.getElementById("headerControls").innerHTML = "";
+      document.getElementById("pollsList").innerHTML = (data.polls || []).map((pl) => {
+        const total = pl.options.reduce((acc, o) => acc + o.votes.length, 0);
+        return `<div class="board-card"><div style="font-weight:700;margin-bottom:4px;">${escapeHtml(pl.question)}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">by @${escapeHtml(pl.author_username)} · ${total} votes</div>
+          ${pl.options.map((o) => {
+            const voted = o.votes.includes(me.id);
+            const pct = total ? Math.round((o.votes.length / total) * 100) : 0;
+            return `<div class="poll-opt ${voted ? "voted" : ""}" onclick="votePoll('${pl.id}','${o.id}')">
+              <span>${escapeHtml(o.label)}</span><strong>${o.votes.length} (${pct}%)</strong></div>`;
+          }).join("")}</div>`;
+      }).join("");
+      return;
+    }
+
+    const act = data.active;
+    if (activeView.kind === "dm") {
+      const peer = data.users[activeView.target_id];
+      document.getElementById("headerTitle").innerHTML = peer
+        ? `<span class="status-dot st-${peer.status}"></span> @${escapeHtml(peer.username)}`
+        : "Direct Message";
+      document.getElementById("headerControls").innerHTML = "";
+    } else {
+      const gcMeta = data.gcs.find((g) => g.id === activeView.target_id);
+      const badge = act.is_public
+        ? '<span class="badge-public">Public GC (Pins Off)</span>'
+        : '<span class="badge-private">Private GC</span>';
+      document.getElementById("headerTitle").innerHTML = `# ${escapeHtml(gcMeta ? gcMeta.name : "gc")} ${badge}`;
+      document.getElementById("headerControls").innerHTML = act.is_public
+        ? ""
+        : `<button class="btn btn-sm btn-ghost" onclick="openPinsModal()">Pins (${(act.pins || []).length})</button>`;
+    }
+
+    const listEl = document.getElementById("messagesList");
+    const wasAtBottom = listEl.scrollHeight - listEl.scrollTop - listEl.clientHeight < 60;
+    listEl.innerHTML = act.messages.map((m) => {
+      const isMine = m.author_id === me.id;
+      const authorObj = data.users[m.author_id] || { id: m.author_id, username: m.author_username, avatar: m.author_avatar };
+      const timeStr = new Date(m.ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      const replyHtml = m.reply_to
+        ? `<div class="reply-quote">Replying to <strong>@${escapeHtml(m.reply_to.author_username)}</strong>: ${escapeHtml(m.reply_to.text)}</div>`
+        : "";
+      const pinBtn = (activeView.kind === "gc" && !act.is_public) ? `<button onclick="togglePin('${m.id}')">Pin</button>` : "";
+      const ownBtns = isMine
+        ? `<button onclick="editMessagePrompt('${m.id}', ${JSON.stringify(m.text)})">Edit</button>
+           <button style="color:var(--red);" onclick="deleteMessage('${m.id}')">Delete</button>`
+        : "";
+
+      return `<div class="msg-card" id="${m.id}">
+        ${renderAvatarHTML(authorObj, 36)}
+        <div class="msg-content">${replyHtml}
+          <div class="msg-header"><span class="msg-author" onclick="openUserProfile('${m.author_id}')">@${escapeHtml(m.author_username)}</span>
+          <span class="msg-time">${timeStr} ${m.edited ? "(edited)" : ""}</span></div>
+          <div class="msg-text">${formatMessageText(m.text)}</div>
+        </div>
+        <div class="msg-actions">
+          <button onclick="setReply('${m.id}', '${escapeHtml(m.author_username)}', ${JSON.stringify(m.text)})">Reply</button>
+          ${pinBtn}${ownBtns}
+        </div>
+      </div>`;
+    }).join("");
+
+    if (scrollBottom || wasAtBottom) {
+      listEl.scrollTop = listEl.scrollHeight;
+    }
+
+    document.getElementById("typingBar").textContent = (act.typing && act.typing.length)
+      ? act.typing.map((u) => "@" + u).join(", ") + (act.typing.length > 1 ? " are typing..." : " is typing...")
+      : "";
+
+    document.getElementById("membersRail").innerHTML = `
+      <div class="nav-section-title">Members — ${act.members.length}</div>
+      ${act.members.map((u) => `<div class="nav-item" onclick="openUserProfile('${u.id}')">
+        <div class="nav-item-left"><span class="status-dot st-${u.status}"></span><span class="nav-item-label">@${escapeHtml(u.username)}</span></div>
+      </div>`).join("")}
+    `;
+  }
+
+  let syncing = false;
+  window.setInterval(async () => {
+    if (syncing) return;
+    syncing = true;
+    try {
+      await syncNow(false);
+    } finally {
+      syncing = false;
+    }
+  }, 2000);
+
+  syncNow(true);
+</script>
+</body>
+</html>
