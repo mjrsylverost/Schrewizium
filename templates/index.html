@@ -3,976 +3,2365 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Schrewizium</title>
+  <title>SCHREWIZIUM — Holiday Parlour &amp; Community Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg-darkest: #111214;
-      --bg-channels: #2b2d31;
-      --bg-chat: #313338;
-      --bg-card: #232428;
-      --bg-input: #383a40;
-      --bg-hover: #35373c;
-      --bg-selected: #404249;
-      --text-normal: #dbdee1;
-      --text-muted: #949ba4;
-      --brand: #5865f2;
-      --brand-hover: #4752c4;
-      --green: #23a55a;
-      --yellow: #f0b232;
-      --red: #ed4245;
-      --offline: #80848e;
+      --bg-deep: #040b16;
+      --bg-mid: #071426;
+      --bg-panel: rgba(9, 24, 45, 0.78);
+      --bg-panel-strong: rgba(11, 29, 54, 0.92);
+      --bg-card: rgba(13, 35, 65, 0.72);
+      --bg-card-hover: rgba(18, 48, 88, 0.88);
+      --bg-input: rgba(5, 16, 32, 0.85);
+      --border-glow: rgba(56, 189, 248, 0.34);
+      --border-subtle: rgba(125, 211, 252, 0.16);
+      --accent: #38bdf8;
+      --accent-2: #60a5fa;
+      --accent-soft: rgba(56, 189, 248, 0.16);
+      --accent-glow: 0 0 18px rgba(56, 189, 248, 0.28), inset 0 0 12px rgba(56, 189, 248, 0.08);
+      --text-main: #e6f2ff;
+      --text-muted: #93b4d4;
+      --text-dim: #6484a6;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger: #f87171;
+      --holiday-gold: #fde68a;
+      --holiday-red: #fb7185;
+      --radius-lg: 14px;
+      --radius-md: 10px;
+      --radius-sm: 7px;
+      --glass-blur: 14px;
+      --space-scale: 1;
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-display: 'Cinzel', Georgia, serif;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", system-ui, sans-serif; }
-    body { background: var(--bg-darkest); color: var(--text-normal); height: 100vh; overflow: hidden; display: flex; }
 
-    .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
-    .st-online { background: var(--green); }
-    .st-idle { background: var(--yellow); }
-    .st-dnd { background: var(--red); }
-    .st-offline { background: var(--offline); }
-
-    .red-dot {
-      width: 9px; height: 9px; border-radius: 50%; background: var(--red);
-      display: inline-block; box-shadow: 0 0 6px var(--red); flex-shrink: 0;
+    body.theme-aurora {
+      --accent: #2dd4bf;
+      --accent-2: #38bdf8;
+      --accent-soft: rgba(45, 212, 191, 0.16);
+      --border-glow: rgba(45, 212, 191, 0.36);
+      --accent-glow: 0 0 18px rgba(45, 212, 191, 0.28), inset 0 0 12px rgba(45, 212, 191, 0.08);
     }
 
-    .avatar {
-      width: 34px; height: 34px; border-radius: 50%; background: var(--brand);
-      display: flex; align-items: center; justify-content: center; font-weight: 700;
-      color: #fff; font-size: 14px; overflow: hidden; flex-shrink: 0; cursor: pointer;
+    body.theme-ember {
+      --accent: #fb923c;
+      --accent-2: #f43f5e;
+      --accent-soft: rgba(251, 146, 60, 0.16);
+      --border-glow: rgba(251, 146, 60, 0.36);
+      --accent-glow: 0 0 18px rgba(251, 146, 60, 0.28), inset 0 0 12px rgba(251, 146, 60, 0.08);
     }
-    .avatar img { width: 100%; height: 100%; object-fit: cover; }
 
-    .app-shell { display: flex; width: 100%; height: 100vh; }
-    .nav-rail {
-      width: 245px; background: var(--bg-channels); display: flex; flex-direction: column;
-      border-right: 1px solid #1f2023;
+    body.theme-violet {
+      --accent: #a78bfa;
+      --accent-2: #38bdf8;
+      --accent-soft: rgba(167, 139, 250, 0.18);
+      --border-glow: rgba(167, 139, 250, 0.38);
+      --accent-glow: 0 0 18px rgba(167, 139, 250, 0.28), inset 0 0 12px rgba(167, 139, 250, 0.08);
     }
-    .brand-bar {
-      padding: 14px 16px; font-weight: 800; font-size: 15px; letter-spacing: 0.5px;
-      border-bottom: 1px solid #1f2023; display: flex; justify-content: space-between; align-items: center;
+
+    body.no-glow {
+      --accent-glow: none;
+      --border-glow: rgba(125, 211, 252, 0.2);
     }
-    .nav-scroll { flex: 1; overflow-y: auto; padding: 10px 8px; }
-    .nav-section-title {
-      font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted);
-      padding: 10px 8px 4px; display: flex; justify-content: space-between; align-items: center;
+
+    body.flat-glass {
+      --glass-blur: 0px;
+      --bg-panel: rgba(8, 22, 42, 0.96);
+      --bg-card: rgba(12, 31, 58, 0.96);
     }
+
+    body.compact-ui {
+      --space-scale: 0.85;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: radial-gradient(circle at 20% 10%, #0d2748 0%, var(--bg-mid) 45%, var(--bg-deep) 100%);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      font-size: calc(14px * var(--space-scale));
+      line-height: 1.45;
+      user-select: none;
+    }
+
+    /* Snow Canvas & Holiday String Lights */
+    #snowCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .holiday-banner-wrap {
+      position: relative;
+      z-index: 15;
+      background: linear-gradient(90deg, rgba(6, 18, 36, 0.95), rgba(14, 38, 70, 0.95), rgba(6, 18, 36, 0.95));
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .holiday-banner-top {
+      text-align: center;
+      font-family: var(--font-display);
+      font-size: 11px;
+      letter-spacing: 0.24em;
+      font-weight: 700;
+      color: var(--holiday-gold);
+      padding: 4px 12px 2px;
+      text-shadow: 0 0 10px rgba(253, 230, 138, 0.35);
+    }
+
+    .string-lights {
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-start;
+      padding: 0 10px 4px;
+      position: relative;
+    }
+
+    .string-lights.hidden-lights {
+      display: none;
+    }
+
+    .string-lights::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: rgba(148, 163, 184, 0.35);
+    }
+
+    .bulb {
+      position: relative;
+      width: 9px;
+      height: 13px;
+      border-radius: 50% 50% 45% 45%;
+      margin-top: 2px;
+      animation: bulbPulse 2.4s infinite ease-in-out;
+    }
+
+    .bulb::before {
+      content: "";
+      position: absolute;
+      top: -3px;
+      left: 2px;
+      width: 5px;
+      height: 4px;
+      background: #334155;
+      border-radius: 1px;
+    }
+
+    .bulb:nth-child(4n+1) { background: #38bdf8; box-shadow: 0 0 10px #38bdf8; animation-delay: 0s; }
+    .bulb:nth-child(4n+2) { background: #fb7185; box-shadow: 0 0 10px #fb7185; animation-delay: 0.5s; }
+    .bulb:nth-child(4n+3) { background: #34d399; box-shadow: 0 0 10px #34d399; animation-delay: 1s; }
+    .bulb:nth-child(4n+4) { background: #fbbf24; box-shadow: 0 0 10px #fbbf24; animation-delay: 1.5s; }
+
+    @keyframes bulbPulse {
+      0%, 100% { opacity: 0.65; transform: scale(0.95); }
+      50% { opacity: 1; transform: scale(1.08); }
+    }
+
+    /* Top Header Bar */
+    .top-bar {
+      position: relative;
+      z-index: 14;
+      height: calc(50px * var(--space-scale));
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: rgba(6, 19, 38, 0.88);
+      backdrop-filter: blur(var(--glass-blur));
+      border-bottom: 1px solid var(--border-glow);
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      color: #f0f9ff;
+      text-shadow: 0 0 14px rgba(56, 189, 248, 0.45);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(52, 211, 153, 0.12);
+      border: 1px solid rgba(52, 211, 153, 0.35);
+      color: var(--success);
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon-btn, .primary-btn, .ghost-btn, .danger-btn {
+      font-family: var(--font-sans);
+      font-size: 12.5px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.16s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      background: var(--accent-soft);
+      border: 1px solid var(--border-glow);
+      color: var(--accent);
+      box-shadow: var(--accent-glow);
+    }
+
+    .icon-btn:hover {
+      background: var(--accent);
+      color: #031122;
+    }
+
+    .primary-btn {
+      padding: 7px 13px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      color: #031122;
+      box-shadow: var(--accent-glow);
+    }
+
+    .primary-btn:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+    }
+
+    .ghost-btn {
+      padding: 6px 11px;
+      background: rgba(15, 38, 70, 0.72);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+    }
+
+    .ghost-btn:hover {
+      border-color: var(--border-glow);
+      background: var(--accent-soft);
+    }
+
+    .danger-btn {
+      padding: 5px 10px;
+      background: rgba(248, 113, 113, 0.14);
+      border: 1px solid rgba(248, 113, 113, 0.35);
+      color: var(--danger);
+    }
+
+    .danger-btn:hover {
+      background: rgba(248, 113, 113, 0.25);
+    }
+
+    /* Full Viewport App Shell */
+    .app-shell {
+      position: relative;
+      z-index: 10;
+      height: calc(100% - 76px);
+      width: 100%;
+      padding: calc(10px * var(--space-scale));
+      display: grid;
+      grid-template-columns: 248px minmax(0, 1fr) 292px;
+      gap: calc(12px * var(--space-scale));
+    }
+
+    .app-shell.hide-right {
+      grid-template-columns: 248px minmax(0, 1fr);
+    }
+
+    .glass-panel {
+      background: var(--bg-panel);
+      backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--border-glow);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--accent-glow);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /* Left Sidebar */
+    .left-sidebar {
+      padding: calc(12px * var(--space-scale)) calc(10px * var(--space-scale));
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(56, 189, 248, 0.3) transparent;
+    }
+
+    .nav-section {
+      margin-bottom: calc(16px * var(--space-scale));
+    }
+
+    .nav-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      padding: 0 8px 6px;
+    }
+
+    .mini-add-btn {
+      width: 19px;
+      height: 19px;
+      border-radius: 5px;
+      border: 1px solid var(--border-subtle);
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--accent);
+      font-size: 13px;
+      line-height: 1;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mini-add-btn:hover {
+      background: var(--accent);
+      color: #031122;
+    }
+
     .nav-item {
-      display: flex; align-items: center; justify-content: space-between; gap: 8px;
-      padding: 7px 10px; border-radius: 6px; cursor: pointer; color: var(--text-muted);
-      font-size: 14px; margin-bottom: 2px;
-    }
-    .nav-item:hover { background: var(--bg-hover); color: var(--text-normal); }
-    .nav-item.active { background: var(--bg-selected); color: #fff; font-weight: 600; }
-    .nav-item-left { display: flex; align-items: center; gap: 8px; overflow: hidden; }
-    .nav-item-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-    .me-bar {
-      background: #232428; padding: 10px; display: flex; align-items: center; justify-content: space-between;
-      border-top: 1px solid #1a1b1e;
-    }
-    .me-info { display: flex; align-items: center; gap: 8px; cursor: pointer; overflow: hidden; }
-    .me-name { font-size: 13px; font-weight: 700; color: #fff; }
-    .me-sub { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
-
-    .main-area { flex: 1; background: var(--bg-chat); display: flex; flex-direction: column; min-width: 0; }
-    .top-header {
-      height: 50px; padding: 0 16px; border-bottom: 1px solid #26272b;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .header-title { font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 8px; }
-    .badge-public { font-size: 11px; background: #23a55a22; color: var(--green); padding: 2px 7px; border-radius: 4px; }
-    .badge-private { font-size: 11px; background: #5865f222; color: #99a3ff; padding: 2px 7px; border-radius: 4px; }
-
-    .scroll-pane { padding: 20px; overflow-y: auto; flex: 1; }
-    .friend-search-wrap { position: relative; max-width: 480px; margin-bottom: 20px; }
-    .input-box {
-      width: 100%; background: var(--bg-input); border: 1px solid #222327; color: #fff;
-      padding: 10px 12px; border-radius: 6px; font-size: 14px; outline: none;
-    }
-    .input-box:focus { border-color: var(--brand); }
-    .search-popout {
-      position: absolute; top: 44px; left: 0; right: 0; background: #1e1f22;
-      border: 1px solid #3f4147; border-radius: 8px; z-index: 50; max-height: 260px; overflow-y: auto;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
-    }
-    .popout-row {
-      display: flex; align-items: center; justify-content: space-between; padding: 9px 12px;
-      border-bottom: 1px solid #2b2d31; background: var(--bg-card); border-radius: 6px; margin-bottom: 6px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: calc(7px * var(--space-scale)) calc(10px * var(--space-scale));
+      margin-bottom: 3px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.14s ease;
     }
 
-    .chat-body { display: flex; flex: 1; min-height: 0; }
-    .messages-col { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-    .messages-list { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
-    .msg-card {
-      display: flex; gap: 12px; padding: 6px 10px; border-radius: 6px; position: relative;
-    }
-    .msg-card:hover { background: #2e3035; }
-    .msg-card:hover .msg-actions { display: flex; }
-    .msg-content { flex: 1; min-width: 0; }
-    .msg-header { display: flex; align-items: baseline; gap: 8px; }
-    .msg-author { font-weight: 700; font-size: 14px; color: #fff; cursor: pointer; }
-    .msg-author:hover { text-decoration: underline; }
-    .msg-time { font-size: 11px; color: var(--text-muted); }
-    .msg-text { font-size: 14px; line-height: 1.45; margin-top: 2px; word-break: break-word; }
-    .mention-pill { background: #5865f233; color: #c9cdfb; padding: 0 4px; border-radius: 4px; font-weight: 600; cursor: pointer; }
-    .reply-quote {
-      font-size: 12px; color: var(--text-muted); border-left: 3px solid var(--brand);
-      padding-left: 8px; margin-bottom: 4px;
-    }
-    .msg-actions {
-      display: none; position: absolute; right: 10px; top: -10px; background: #2b2d31;
-      border: 1px solid #1f2023; border-radius: 6px; overflow: hidden;
-    }
-    .msg-actions button {
-      background: none; border: none; color: var(--text-normal); padding: 4px 8px;
-      font-size: 12px; cursor: pointer;
-    }
-    .msg-actions button:hover { background: var(--bg-hover); }
-
-    .composer-wrap { padding: 0 16px 16px; position: relative; }
-    .reply-banner {
-      background: #2b2d31; padding: 6px 12px; border-radius: 6px 6px 0 0; font-size: 12px;
-      color: var(--text-muted); display: flex; justify-content: space-between; align-items: center;
-    }
-    .typing-bar { height: 18px; font-size: 12px; color: var(--text-muted); padding: 0 4px 4px; }
-    .mention-popup {
-      position: absolute; bottom: 68px; left: 16px; width: 280px; background: #1e1f22;
-      border: 1px solid #3f4147; border-radius: 8px; z-index: 60; overflow: hidden;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
-    }
-    .mention-option {
-      display: flex; align-items: center; gap: 8px; padding: 8px 10px; cursor: pointer; font-size: 13px;
-    }
-    .mention-option:hover, .mention-option.selected { background: var(--brand); color: #fff; }
-
-    .members-rail {
-      width: 210px; background: var(--bg-channels); border-left: 1px solid #1f2023;
-      padding: 12px 8px; overflow-y: auto;
+    .nav-item:hover:not(.locked) {
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--text-main);
     }
 
-    .board-card {
-      background: var(--bg-card); border: 1px solid #1e1f22; border-radius: 8px;
-      padding: 14px; margin-bottom: 12px;
+    .nav-item.active {
+      background: var(--accent-soft);
+      border-color: var(--border-glow);
+      color: #ffffff;
+      font-weight: 600;
+      box-shadow: inset 0 0 10px rgba(56, 189, 248, 0.14);
     }
-    .poll-opt {
-      display: flex; justify-content: space-between; align-items: center;
-      background: #2b2d31; padding: 8px 12px; border-radius: 6px; margin-top: 6px; cursor: pointer;
-    }
-    .poll-opt:hover { background: var(--bg-hover); }
-    .poll-opt.voted { border: 1px solid var(--brand); }
 
-    .btn {
-      background: var(--brand); color: #fff; border: none; padding: 7px 12px;
-      border-radius: 5px; font-size: 13px; font-weight: 600; cursor: pointer;
+    .nav-item.locked {
+      opacity: 0.65;
+      cursor: not-allowed;
     }
-    .btn:hover { background: var(--brand-hover); }
-    .btn-sm { padding: 4px 9px; font-size: 12px; }
-    .btn-green { background: var(--green); }
-    .btn-red { background: var(--red); }
-    .btn-ghost { background: #383a40; }
 
+    .nav-item-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .nav-item-label {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .badge-upcoming {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.16);
+      color: var(--text-muted);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+    }
+
+    .badge-public {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      padding: 2px 6px;
+      border-radius: 5px;
+      background: rgba(56, 189, 248, 0.14);
+      color: var(--accent);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+
+    .badge-count {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      padding: 1px 6px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.18);
+      color: var(--accent);
+    }
+
+    .status-dot-sm {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .status-online { background: var(--success); box-shadow: 0 0 6px var(--success); }
+    .status-idle { background: var(--warning); }
+    .status-dnd { background: var(--danger); }
+    .status-offline { background: #64748b; }
+
+    /* Center Main Workspace */
+    .center-stage {
+      padding: calc(16px * var(--space-scale)) calc(18px * var(--space-scale));
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(56, 189, 248, 0.3) transparent;
+    }
+
+    .stage-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: calc(14px * var(--space-scale));
+      flex-wrap: wrap;
+    }
+
+    .stage-title {
+      font-size: calc(22px * var(--space-scale));
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #f8fafc;
+    }
+
+    .stage-subtitle {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .stage-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .select-control, .text-input, .textarea-input {
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .select-control:focus, .text-input:focus, .textarea-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.18);
+    }
+
+    .select-control {
+      padding: 7px 11px;
+      cursor: pointer;
+    }
+
+    .text-input {
+      padding: 8px 12px;
+      width: 100%;
+    }
+
+    .textarea-input {
+      padding: 9px 12px;
+      width: 100%;
+      resize: vertical;
+      min-height: 76px;
+    }
+
+    /* Category Pills & Search Bar */
+    .pills-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: wrap;
+      margin-bottom: calc(10px * var(--space-scale));
+    }
+
+    .pill-btn {
+      padding: 5px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      background: rgba(12, 31, 58, 0.72);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.14s ease;
+    }
+
+    .pill-btn:hover {
+      color: var(--text-main);
+      border-color: var(--border-glow);
+    }
+
+    .pill-btn.active {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.22);
+    }
+
+    .search-bar-wrap {
+      margin-bottom: calc(14px * var(--space-scale));
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 9px 13px;
+      border-radius: var(--radius-md);
+      background: rgba(5, 16, 33, 0.85);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      font-size: 13px;
+      outline: none;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
+    }
+
+    /* Cards & Posts */
+    .card-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: calc(14px * var(--space-scale));
+      margin-bottom: calc(12px * var(--space-scale));
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .card-box:hover {
+      border-color: var(--border-glow);
+      background: var(--bg-card-hover);
+    }
+
+    .card-box.pinned {
+      border-color: rgba(251, 191, 36, 0.45);
+      box-shadow: inset 0 0 14px rgba(251, 191, 36, 0.06);
+    }
+
+    .post-meta-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+
+    .post-author-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .tag-chip {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      padding: 2px 7px;
+      border-radius: 5px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+
+    .post-title {
+      font-size: 15.5px;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 5px;
+    }
+
+    .post-body {
+      font-size: 13.5px;
+      color: var(--text-main);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .post-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(125, 211, 252, 0.1);
+      flex-wrap: wrap;
+    }
+
+    .replies-box {
+      margin-top: 10px;
+      padding-left: 12px;
+      border-left: 2px solid rgba(56, 189, 248, 0.28);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .reply-item {
+      background: rgba(5, 16, 33, 0.58);
+      border-radius: var(--radius-sm);
+      padding: 7px 10px;
+      font-size: 12.5px;
+    }
+
+    /* Chat & DM Layout */
+    .chat-layout {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+    }
+
+    .pins-bar {
+      background: rgba(251, 191, 36, 0.08);
+      border: 1px solid rgba(251, 191, 36, 0.28);
+      border-radius: var(--radius-sm);
+      padding: 7px 11px;
+      margin-bottom: 10px;
+      font-size: 12px;
+      color: var(--holiday-gold);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .messages-stream {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-right: 4px;
+      margin-bottom: 8px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(56, 189, 248, 0.3) transparent;
+    }
+
+    .msg-row {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 9px 12px;
+    }
+
+    .msg-row.pinned {
+      border-color: rgba(251, 191, 36, 0.45);
+    }
+
+    .msg-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 3px;
+    }
+
+    .msg-user {
+      font-weight: 700;
+      font-size: 12.5px;
+      color: var(--accent);
+      font-family: var(--font-mono);
+    }
+
+    .msg-time {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--text-dim);
+    }
+
+    .typing-bar {
+      min-height: 20px;
+      font-size: 12px;
+      font-style: italic;
+      color: var(--accent);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chat-compose {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* Right Sidebar */
+    .right-sidebar {
+      padding: calc(14px * var(--space-scale));
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: calc(12px * var(--space-scale));
+      scrollbar-width: thin;
+      scrollbar-color: rgba(56, 189, 248, 0.3) transparent;
+    }
+
+    .profile-card {
+      background: linear-gradient(160deg, rgba(16, 44, 82, 0.88), rgba(7, 20, 40, 0.92));
+      border: 1px solid var(--border-glow);
+      border-radius: var(--radius-md);
+      padding: 14px;
+    }
+
+    .profile-top {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      margin-bottom: 10px;
+    }
+
+    .avatar-circle {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #1d4ed8);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid rgba(255, 255, 255, 0.25);
+      flex-shrink: 0;
+    }
+
+    .profile-name {
+      font-weight: 700;
+      font-size: 14.5px;
+      color: #ffffff;
+    }
+
+    .profile-handle {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    .parlour-card {
+      background: rgba(10, 27, 52, 0.82);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 13px;
+    }
+
+    .parlour-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--holiday-gold);
+      margin-bottom: 5px;
+    }
+
+    .parlour-quote {
+      font-size: 12px;
+      font-style: italic;
+      color: var(--text-muted);
+    }
+
+    .member-chip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 8px;
+      border-radius: var(--radius-sm);
+      background: rgba(7, 20, 40, 0.65);
+      border: 1px solid rgba(125, 211, 252, 0.1);
+      font-size: 12.5px;
+      margin-bottom: 5px;
+    }
+
+    /* Poll Bar */
+    .poll-option-row {
+      margin-top: 8px;
+    }
+
+    .poll-bar-btn {
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      text-align: left;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      background: rgba(6, 18, 36, 0.85);
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .poll-bar-btn:hover {
+      border-color: var(--accent);
+    }
+
+    .poll-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      background: rgba(56, 189, 248, 0.2);
+      pointer-events: none;
+      transition: width 0.25s ease;
+    }
+
+    /* Modal / Drawer Overlay for Settings, Appearance, Composer */
     .modal-backdrop {
-      position: fixed; inset: 0; background: rgba(0, 0, 0, 0.72); display: flex;
-      align-items: center; justify-content: center; z-index: 100;
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 8, 18, 0.76);
+      backdrop-filter: blur(6px);
+      z-index: 40;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
     }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
     .modal-card {
-      background: #2b2d31; border-radius: 10px; padding: 22px; width: 390px; max-width: 92vw;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; gap: 12px;
+      width: 100%;
+      max-width: 560px;
+      max-height: 86vh;
+      overflow-y: auto;
+      background: var(--bg-panel-strong);
+      border: 1px solid var(--border-glow);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--accent-glow);
+      padding: 18px;
     }
-    .hidden { display: none !important; }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(125, 211, 252, 0.08);
+    }
+
+    .setting-label {
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .setting-desc {
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    .toast-banner {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      z-index: 60;
+      background: rgba(8, 25, 48, 0.95);
+      border: 1px solid var(--accent);
+      color: #f0f9ff;
+      padding: 9px 14px;
+      border-radius: var(--radius-md);
+      font-size: 12.5px;
+      box-shadow: var(--accent-glow);
+      opacity: 0;
+      transform: translateY(8px);
+      transition: all 0.2s ease;
+      pointer-events: none;
+    }
+
+    .toast-banner.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .empty-state {
+      color: var(--text-muted);
+      font-size: 13px;
+      padding: 14px 2px;
+    }
+
+    @media (max-width: 980px) {
+      .app-shell, .app-shell.hide-right {
+        grid-template-columns: 205px minmax(0, 1fr);
+      }
+      .right-sidebar {
+        display: none;
+      }
+    }
+
+    @media (max-width: 700px) {
+      html, body {
+        overflow: auto;
+      }
+      .app-shell, .app-shell.hide-right {
+        height: auto;
+        grid-template-columns: 1fr;
+      }
+      .right-sidebar {
+        display: flex;
+      }
+    }
   </style>
 </head>
 <body>
-  <div id="authModal" class="modal-backdrop">
-    <div class="modal-card">
-      <h2>Schrewizium</h2>
-      <p style="font-size:13px;color:var(--text-muted);">Choose a username with no spaces (letters, numbers, "_" or ".").</p>
-      <input id="authUsername" class="input-box" placeholder="e.g. sylverost" maxlength="20" />
-      <input id="authAvatar" class="input-box" placeholder="Avatar URL (optional)" />
-      <input id="authBio" class="input-box" placeholder="Short bio (optional)" />
-      <div id="authError" style="color:var(--red);font-size:12px;"></div>
-      <button class="btn" onclick="submitAuth()">Enter</button>
-    </div>
+  <canvas id="snowCanvas"></canvas>
+
+  <div class="holiday-banner-wrap">
+    <div class="holiday-banner-top">MERRY CHRISTMAS</div>
+    <div class="string-lights" id="stringLights"></div>
   </div>
 
-  <div id="profileModal" class="modal-backdrop hidden" onclick="if (event.target === this) closeModal('profileModal')">
-    <div class="modal-card" id="profileModalBody"></div>
-  </div>
-
-  <div id="accountModal" class="modal-backdrop hidden" onclick="if (event.target === this) closeModal('accountModal')">
-    <div class="modal-card">
-      <h3>Account &amp; Status</h3>
-      <input id="editUsername" class="input-box" placeholder="Username (no spaces)" maxlength="20" />
-      <select id="editStatus" class="input-box">
-        <option value="online">Online</option>
-        <option value="idle">Idle</option>
-        <option value="dnd">Do Not Disturb</option>
-        <option value="offline">Offline / Invisible</option>
-      </select>
-      <input id="editCustomStatus" class="input-box" placeholder="Custom status..." maxlength="60" />
-      <input id="editAvatar" class="input-box" placeholder="Avatar URL (https://...)" />
-      <textarea id="editBio" class="input-box" rows="2" placeholder="Bio..." maxlength="200"></textarea>
-      <div id="profileError" style="color:var(--red);font-size:12px;"></div>
-      <div style="display:flex;gap:8px;justify-content:flex-end;">
-        <button class="btn btn-red" onclick="logoutUser()">Logout</button>
-        <button class="btn btn-ghost" onclick="closeModal('accountModal')">Cancel</button>
-        <button class="btn" onclick="saveProfile()">Save</button>
+  <header class="top-bar">
+    <div class="brand-group">
+      <div class="brand-title">
+        <span>SCHREWIZIUM</span>
+      </div>
+      <div class="live-pill" id="syncStatusPill">
+        <span class="live-dot"></span>
+        <span id="syncStatusText">Synced</span>
       </div>
     </div>
-  </div>
 
-  <div id="createGcModal" class="modal-backdrop hidden" onclick="if (event.target === this) closeModal('createGcModal')">
-    <div class="modal-card">
-      <h3>Create Group Chat</h3>
-      <input id="gcNameInput" class="input-box" placeholder="Group chat name" maxlength="30" />
-      <label style="font-size:13px;display:flex;align-items:center;gap:8px;">
-        <input type="checkbox" id="gcPublicCheck" onchange="toggleGcFriendPicker()" />
-        Public GC (pinning disabled)
-      </label>
-      <div id="gcFriendPicker" style="max-height:140px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
-      <div style="display:flex;gap:8px;justify-content:flex-end;">
-        <button class="btn btn-ghost" onclick="closeModal('createGcModal')">Cancel</button>
-        <button class="btn" onclick="createGc()">Create</button>
-      </div>
+    <div class="top-actions">
+      <button class="ghost-btn" id="openAppearanceBtn" title="Appearance">Appearance</button>
+      <button class="ghost-btn" id="openSettingsBtn" title="Settings">Settings</button>
+      <button class="icon-btn" id="quickComposeBtn" title="New Post / Action">+</button>
     </div>
-  </div>
+  </header>
 
-  <div id="pinsModal" class="modal-backdrop hidden" onclick="if (event.target === this) closeModal('pinsModal')">
-    <div class="modal-card" style="width:460px;">
-      <h3>Pinned Messages</h3>
-      <div id="pinsList" style="max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;"></div>
-      <button class="btn btn-ghost" onclick="closeModal('pinsModal')">Close</button>
-    </div>
-  </div>
-
-  <div class="app-shell">
-    <aside class="nav-rail">
-      <div class="brand-bar"><span>SCHREWIZIUM</span></div>
-      <div class="nav-scroll">
-        <div id="navFriends" class="nav-item active" onclick="openView('friends','friends')">
-          <div class="nav-item-left"><span>Friends</span></div>
-          <span id="friendsRedDot" class="red-dot hidden"></span>
+  <main class="app-shell" id="appShell">
+    <!-- LEFT SIDEBAR -->
+    <aside class="glass-panel left-sidebar">
+      <div class="nav-section">
+        <div class="nav-section-header">
+          <span>SPACES</span>
         </div>
-        <div id="navBulletin" class="nav-item" onclick="openView('bulletin','bulletin')">
-          <div class="nav-item-left"><span>Bulletin Board</span></div>
-        </div>
-        <div id="navPolls" class="nav-item" onclick="openView('polls','polls')">
-          <div class="nav-item-left"><span>Polls</span></div>
-        </div>
-
-        <div class="nav-section-title">
-          <span>Group Chats</span>
-          <button class="btn btn-sm btn-ghost" onclick="openCreateGcModal()">+</button>
-        </div>
-        <div id="gcNavList"></div>
-
-        <div class="nav-section-title"><span>Direct Messages</span></div>
-        <div id="dmNavList"></div>
+        <button class="nav-item active" data-view="bulletins" data-board="International (Main)">
+          <span class="nav-item-left"><span class="nav-item-label">Bulletins</span></span>
+        </button>
+        <button class="nav-item" data-view="friends">
+          <span class="nav-item-left"><span class="nav-item-label">Friends</span></span>
+          <span class="badge-count" id="navFriendsCount">0</span>
+        </button>
+        <button class="nav-item" data-view="polls">
+          <span class="nav-item-left"><span class="nav-item-label">Polls</span></span>
+          <span class="badge-count" id="navPollsCount">0</span>
+        </button>
+        <button class="nav-item" data-view="group_chat" data-target="general-lounge">
+          <span class="nav-item-left"><span class="nav-item-label">Group Chats</span></span>
+        </button>
+        <button class="nav-item" data-view="dm">
+          <span class="nav-item-left"><span class="nav-item-label">DMs</span></span>
+        </button>
       </div>
 
-      <div class="me-bar">
-        <div class="me-info" onclick="openAccountModal()">
-          <div id="meAvatar" class="avatar">?</div>
-          <div>
-            <div style="display:flex;align-items:center;gap:6px;">
-              <span id="meUsername" class="me-name">...</span>
-              <span id="meStatusDot" class="status-dot st-online"></span>
-            </div>
-            <div id="meCustomStatus" class="me-sub">Edit profile</div>
-          </div>
+      <div class="nav-section">
+        <div class="nav-section-header">
+          <span>BULLETIN BOARDS</span>
         </div>
+        <button class="nav-item board-btn active" data-view="bulletins" data-board="International (Main)">
+          <span class="nav-item-left"><span class="nav-item-label">International (Main)</span></span>
+        </button>
+        <button class="nav-item board-btn" data-view="bulletins" data-board="Anime">
+          <span class="nav-item-left"><span class="nav-item-label">Anime</span></span>
+        </button>
+        <button class="nav-item board-btn" data-view="bulletins" data-board="Gaming">
+          <span class="nav-item-left"><span class="nav-item-label">Gaming</span></span>
+        </button>
+        <button class="nav-item board-btn" data-view="bulletins" data-board="Music">
+          <span class="nav-item-left"><span class="nav-item-label">Music</span></span>
+        </button>
+        <button class="nav-item board-btn" data-view="bulletins" data-board="Tech">
+          <span class="nav-item-left"><span class="nav-item-label">Tech</span></span>
+        </button>
+        <button class="nav-item board-btn" data-view="bulletins" data-board="Creative Writing">
+          <span class="nav-item-left"><span class="nav-item-label">Creative Writing</span></span>
+        </button>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-header">
+          <span>LOCKED</span>
+        </div>
+        <button class="nav-item locked" type="button" data-locked="Minigames">
+          <span class="nav-item-left"><span class="nav-item-label">Minigames</span></span>
+          <span class="badge-upcoming">upcoming</span>
+        </button>
+        <button class="nav-item locked" type="button" data-locked="Arcade">
+          <span class="nav-item-left"><span class="nav-item-label">Arcade</span></span>
+          <span class="badge-upcoming">upcoming</span>
+        </button>
+        <button class="nav-item locked" type="button" data-locked="ESF Bank">
+          <span class="nav-item-left"><span class="nav-item-label">ESF Bank</span></span>
+          <span class="badge-upcoming">upcoming</span>
+        </button>
+        <button class="nav-item locked" type="button" data-locked="Community Hub">
+          <span class="nav-item-left"><span class="nav-item-label">Community Hub</span></span>
+          <span class="badge-upcoming">upcoming</span>
+        </button>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-header">
+          <span>GROUPS</span>
+          <button class="mini-add-btn" id="createGroupBtn" title="New Group Chat">+</button>
+        </div>
+        <div id="sidebarGroupsList"></div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-header">
+          <span>DIRECT MESSAGES</span>
+        </div>
+        <div id="sidebarDmsList"></div>
       </div>
     </aside>
 
-    <main class="main-area">
-      <header class="top-header">
-        <div id="headerTitle" class="header-title">Friends</div>
-        <div id="headerControls"></div>
-      </header>
+    <!-- CENTER STAGE -->
+    <section class="glass-panel center-stage" id="centerStage"></section>
 
-      <section id="friendsPane" class="scroll-pane">
-        <h4 style="margin-bottom:8px;">Add Friend</h4>
-        <div class="friend-search-wrap">
-          <input id="friendSearchInput" class="input-box" placeholder="Type username (no spaces)..." oninput="searchUsersLive()" />
-          <div id="friendSearchPopout" class="search-popout hidden"></div>
-        </div>
-
-        <div id="incomingSection" class="hidden" style="margin-bottom:18px;">
-          <h4 style="margin-bottom:8px;color:var(--yellow);">Incoming Requests</h4>
-          <div id="incomingList"></div>
-        </div>
-
-        <div id="outgoingSection" class="hidden" style="margin-bottom:18px;">
-          <h4 style="margin-bottom:8px;color:var(--text-muted);">Sent Requests</h4>
-          <div id="outgoingList"></div>
-        </div>
-
-        <h4 style="margin-bottom:8px;">Friends</h4>
-        <div id="friendsList"></div>
-      </section>
-
-      <section id="bulletinPane" class="scroll-pane hidden">
-        <div class="board-card">
-          <h4 style="margin-bottom:8px;">New Bulletin Post</h4>
-          <input id="bullTitle" class="input-box" placeholder="Post title" style="margin-bottom:8px;" />
-          <textarea id="bullBody" class="input-box" rows="2" placeholder="Write announcement or post..." style="margin-bottom:8px;"></textarea>
-          <button class="btn" onclick="submitBulletin()">Publish Post</button>
-        </div>
-        <div id="bulletinList"></div>
-      </section>
-
-      <section id="pollsPane" class="scroll-pane hidden">
-        <div class="board-card">
-          <h4 style="margin-bottom:8px;">Create Poll</h4>
-          <input id="pollQuestion" class="input-box" placeholder="Ask a question..." style="margin-bottom:8px;" />
-          <input id="pollOptions" class="input-box" placeholder="Options separated by commas (e.g. Option A, Option B, Option C)" style="margin-bottom:8px;" />
-          <button class="btn" onclick="submitPoll()">Create Poll</button>
-        </div>
-        <div id="pollsList"></div>
-      </section>
-
-      <section id="chatPane" class="chat-body hidden">
-        <div class="messages-col">
-          <div id="messagesList" class="messages-list"></div>
-          <div class="composer-wrap">
-            <div id="mentionPopup" class="mention-popup hidden"></div>
-            <div id="typingBar" class="typing-bar"></div>
-            <div id="replyBanner" class="reply-banner hidden">
-              <span id="replyBannerText"></span>
-              <button class="btn btn-sm btn-ghost" onclick="clearReply()">x</button>
-            </div>
-            <input id="msgInput" class="input-box" placeholder="Message..." onkeydown="handleMsgKeydown(event)" oninput="handleMsgInput()" />
+    <!-- RIGHT SIDEBAR -->
+    <aside class="glass-panel right-sidebar" id="rightSidebar">
+      <div class="profile-card">
+        <div class="profile-top">
+          <div class="avatar-circle" id="profileAvatar">G</div>
+          <div>
+            <div class="profile-name" id="profileDisplayName">Guest</div>
+            <div class="profile-handle" id="profileHandle">@guest</div>
           </div>
         </div>
-        <aside id="membersRail" class="members-rail"></aside>
-      </section>
-    </main>
+        <div style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">
+          Status: <strong style="color:var(--text-main);" id="profileStatusLabel">Browsing</strong>
+        </div>
+        <div style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">
+          Sign in via <code>+</code> or Settings — Account to add friends and post forums.
+        </div>
+        <div style="display:flex; gap:6px;">
+          <select class="select-control" id="quickStatusSelect" style="flex:1; padding:5px 8px; font-size:12px;">
+            <option value="Browsing">Browsing</option>
+            <option value="Online">Online</option>
+            <option value="Idle by the Hearth">Idle by the Hearth</option>
+            <option value="Writing">Writing</option>
+            <option value="Do Not Disturb">Do Not Disturb</option>
+          </select>
+          <button class="ghost-btn" id="quickAccountBtn" style="padding:5px 9px; font-size:11.5px;">Account</button>
+        </div>
+      </div>
+
+      <div class="parlour-card">
+        <div class="parlour-title">Holiday Parlour</div>
+        <div class="parlour-quote">"Merry Christmas — warm hearth, falling snow, and open forums."</div>
+      </div>
+
+      <div class="parlour-card">
+        <div class="nav-section-header" style="padding:0 0 6px;">
+          <span>ACTIVE MEMBERS</span>
+          <span class="badge-count" id="activeMembersCount">0</span>
+        </div>
+        <div id="rightMembersList"></div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- APPEARANCE MODAL -->
+  <div class="modal-backdrop" id="appearanceModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="font-size:16px;">Appearance</h3>
+        <button class="ghost-btn" data-close="appearanceModal">Close</button>
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Accent Theme</div>
+          <div class="setting-desc">Switch glowing accents across panels and pills</div>
+        </div>
+        <select class="select-control" id="themeSelect">
+          <option value="holiday-cyan">Holiday Cyan (Default)</option>
+          <option value="aurora">Northern Aurora</option>
+          <option value="ember">Hearth Ember</option>
+          <option value="violet">Midnight Violet</option>
+        </select>
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Falling Snow</div>
+          <div class="setting-desc">Toggle animated snow particles across the viewport</div>
+        </div>
+        <input type="checkbox" id="toggleSnow" checked />
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Holiday String Lights</div>
+          <div class="setting-desc">Show or hide top glowing bulbs</div>
+        </div>
+        <input type="checkbox" id="toggleLights" checked />
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Neon Glow &amp; Blur</div>
+          <div class="setting-desc">Toggle outer cyan glow and frosted glass blur</div>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <label style="font-size:12px;"><input type="checkbox" id="toggleGlow" checked /> Glow</label>
+          <label style="font-size:12px;"><input type="checkbox" id="toggleBlur" checked /> Glass Blur</label>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Compact Density &amp; Right Rail</div>
+          <div class="setting-desc">Tighten spacing or hide the right profile column</div>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <label style="font-size:12px;"><input type="checkbox" id="toggleCompact" /> Compact</label>
+          <label style="font-size:12px;"><input type="checkbox" id="toggleHideRight" /> Hide Right</label>
+        </div>
+      </div>
+    </div>
   </div>
 
-<script>
-  let stateCache = null;
-  let activeView = { kind: "friends", target_id: "friends" };
-  let replyToId = null;
-  let lastTypingSent = 0;
-  let mentionMatches = [];
-  let mentionIndex = 0;
+  <!-- SETTINGS & ACCOUNT MODAL -->
+  <div class="modal-backdrop" id="settingsModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="font-size:16px;">Settings &amp; Account</h3>
+        <button class="ghost-btn" data-close="settingsModal">Close</button>
+      </div>
 
-  function sanitizeNoSpaces(el) {
-    el.value = el.value.replace(/\s+/g, "");
-  }
+      <div class="setting-row" style="flex-direction:column; align-items:stretch;">
+        <div class="setting-label" style="margin-bottom:6px;">Account Profile</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <input type="text" class="text-input" id="accountNameInput" placeholder="Display Name (e.g. sylverost)" />
+          <input type="text" class="text-input" id="accountHandleInput" placeholder="Username (e.g. sylverost)" />
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
+          <button class="ghost-btn" id="signOutGuestBtn">Switch to Guest</button>
+          <button class="primary-btn" id="saveAccountBtn">Save Account</button>
+        </div>
+      </div>
 
-  document.getElementById("authUsername").addEventListener("input", (e) => sanitizeNoSpaces(e.target));
-  document.getElementById("editUsername").addEventListener("input", (e) => sanitizeNoSpaces(e.target));
-  document.getElementById("friendSearchInput").addEventListener("input", (e) => sanitizeNoSpaces(e.target));
-
-  function openModal(id) {
-    document.getElementById(id).classList.remove("hidden");
-  }
-
-  function closeModal(id) {
-    document.getElementById(id).classList.add("hidden");
-  }
-
-  function escapeHtml(value) {
-    return String(value || "").replace(/[&<>"']/g, (ch) => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
-    }[ch]));
-  }
-
-  function renderAvatarHTML(user, size = 34) {
-    const letter = (user.username || "?")[0].toUpperCase();
-    if (user.avatar) {
-      return `<div class="avatar" style="width:${size}px;height:${size}px;" onclick="openUserProfile('${user.id}')"><img src="${escapeHtml(user.avatar)}" onerror="this.remove()" /></div>`;
-    }
-    return `<div class="avatar" style="width:${size}px;height:${size}px;" onclick="openUserProfile('${user.id}')">${letter}</div>`;
-  }
-
-  function formatMessageText(text) {
-    return escapeHtml(text).replace(/@([a-zA-Z0-9_.]{2,20})/g, (_, uname) =>
-      `<span class="mention-pill" onclick="openProfileByUsername('${uname}')">@${uname}</span>`
-    );
-  }
-
-  async function submitAuth() {
-    const username = document.getElementById("authUsername").value.trim();
-    const avatar = document.getElementById("authAvatar").value.trim();
-    const bio = document.getElementById("authBio").value.trim();
-    const res = await fetch("/api/auth", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, avatar, bio })
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      document.getElementById("authError").textContent = data.error || "Sign in failed.";
-      return;
-    }
-    closeModal("authModal");
-    await syncNow(true);
-  }
-
-  async function logoutUser() {
-    await fetch("/api/logout", { method: "POST" });
-    window.location.reload();
-  }
-
-  function openAccountModal() {
-    if (!stateCache || !stateCache.me) return;
-    const me = stateCache.me;
-    document.getElementById("editUsername").value = me.username;
-    document.getElementById("editStatus").value = me.status || "online";
-    document.getElementById("editCustomStatus").value = me.custom_status || "";
-    document.getElementById("editAvatar").value = me.avatar || "";
-    document.getElementById("editBio").value = me.bio || "";
-    document.getElementById("profileError").textContent = "";
-    openModal("accountModal");
-  }
-
-  async function saveProfile() {
-    const res = await fetch("/api/profile", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: document.getElementById("editUsername").value,
-        status: document.getElementById("editStatus").value,
-        custom_status: document.getElementById("editCustomStatus").value,
-        avatar: document.getElementById("editAvatar").value,
-        bio: document.getElementById("editBio").value
-      })
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      document.getElementById("profileError").textContent = data.error || "Could not save profile.";
-      return;
-    }
-    closeModal("accountModal");
-    await syncNow();
-  }
-
-  function openProfileByUsername(uname) {
-    if (!stateCache) return;
-    const found = Object.values(stateCache.users).find((u) => u.username.toLowerCase() === uname.toLowerCase());
-    if (found) openUserProfile(found.id);
-  }
-
-  function openUserProfile(uid) {
-    if (!stateCache || !stateCache.users[uid]) return;
-    const target = stateCache.users[uid];
-    const me = stateCache.me;
-    const isFriend = stateCache.friends.some((f) => f.id === uid);
-    let actionButton = "";
-    if (uid !== me.id) {
-      actionButton = isFriend
-        ? `<button class="btn" onclick="closeModal('profileModal');openView('dm','${uid}')">Message</button>`
-        : `<button class="btn btn-green" onclick="sendFriendRequest('${target.username}');closeModal('profileModal')">Add Friend</button>`;
-    }
-    document.getElementById("profileModalBody").innerHTML = `
-      <div style="display:flex;align-items:center;gap:12px;">
-        ${renderAvatarHTML(target, 52)}
+      <div class="setting-row">
         <div>
-          <div style="display:flex;align-items:center;gap:6px;font-size:17px;font-weight:700;">
-            <span>@${escapeHtml(target.username)}</span><span class="status-dot st-${target.status}"></span>
+          <div class="setting-label">Live Sync Interval</div>
+          <div class="setting-desc">Poll backend / sync state for messages, typing, and members</div>
+        </div>
+        <select class="select-control" id="syncIntervalSelect">
+          <option value="2000">2s (Fast)</option>
+          <option value="4000" selected>4s (Balanced)</option>
+          <option value="8000">8s (Light)</option>
+          <option value="0">Paused</option>
+        </select>
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Enter Key Sends Chat</div>
+          <div class="setting-desc">Use Shift+Enter for new lines in chat &amp; DMs</div>
+        </div>
+        <input type="checkbox" id="enterToSendCheck" checked />
+      </div>
+
+      <div class="setting-row" style="border-bottom:none;">
+        <div>
+          <div class="setting-label">Reset Local Cache</div>
+          <div class="setting-desc">Clear local preferences and cached sample state</div>
+        </div>
+        <button class="danger-btn" id="resetLocalDataBtn">Reset Local</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPOSER MODAL -->
+  <div class="modal-backdrop" id="composerModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="font-size:16px;" id="composerTitle">Create New Forum / Bulletin</h3>
+        <button class="ghost-btn" data-close="composerModal">Close</button>
+      </div>
+      <div id="composerBody"></div>
+    </div>
+  </div>
+
+  <div class="toast-banner" id="toastBanner"></div>
+
+  <script>
+    (function () {
+      const STORAGE_KEY = "schrewizium_unified_state_v1";
+      const CATEGORIES = ["International", "Anime", "Gaming", "Music", "Tech", "Creative Writing"];
+      const BOARDS = ["International (Main)", "Anime", "Gaming", "Music", "Tech", "Creative Writing"];
+
+      const defaultState = {
+        user: {
+          name: "Guest",
+          username: "guest",
+          status: "Browsing",
+          isGuest: true
+        },
+        prefs: {
+          theme: "holiday-cyan",
+          snow: true,
+          lights: true,
+          glow: true,
+          blur: true,
+          compact: false,
+          hideRight: false,
+          syncInterval: 4000,
+          enterToSend: true
+        },
+        view: "bulletins",
+        activeBoard: "International (Main)",
+        activeCategory: "International",
+        searchQuery: "",
+        sortOrder: "newest",
+        activeGroupId: "general-lounge",
+        activeDmUser: "hearth-bot",
+        bulletins: [
+          {
+            id: "b-101",
+            board: "International (Main)",
+            category: "International",
+            title: "Welcome to the Schrewizium Holiday Parlour",
+            body: "Open forums, replies, edit & delete, polls, friends, group chats, and live typing indicators are all united here.",
+            author: "sylverost",
+            createdAt: Date.now() - 3600000,
+            pinned: true,
+            replies: [
+              { id: "r-1", author: "guest", text: "Snow and cyan borders look super clean.", createdAt: Date.now() - 1800000 }
+            ]
+          }
+        ],
+        polls: [
+          {
+            id: "p-1",
+            question: "Which space should get the next major expansion?",
+            author: "sylverost",
+            options: [
+              { id: "o-1", label: "Creative Writing & Lore Archive", votes: 3 },
+              { id: "o-2", label: "Co-op Minigames & Arcade", votes: 5 },
+              { id: "o-3", label: "Custom Profile Badges", votes: 2 }
+            ],
+            userVotedOptionId: null
+          }
+        ],
+        friends: [],
+        pendingFriendRequests: [],
+        groups: [
+          { id: "general-lounge", name: "general-lounge", isPublic: true },
+          { id: "hearth-general", name: "hearth-general", isPublic: true }
+        ],
+        groupMessages: {
+          "general-lounge": [
+            { id: "gm-1", author: "sylverost", text: "Welcome to #general-lounge — type below to chat live.", time: "12:00", pinned: true }
+          ],
+          "hearth-general": [
+            { id: "gm-2", author: "sylverost", text: "Warm hearth channel is open.", time: "12:05", pinned: false }
+          ]
+        },
+        dmMessages: {
+          "hearth-bot": [
+            { id: "dm-1", author: "hearth-bot", text: "Direct messages are ready. Add a friend to start 1-on-1 chats.", time: "12:01", pinned: false }
+          ]
+        },
+        pins: {
+          "general-lounge": "Welcome to #general-lounge — type below to chat live."
+        },
+        members: [
+          { username: "sylverost", status: "online" },
+          { username: "hearth-bot", status: "online" }
+        ],
+        typingUsers: []
+      };
+
+      let state = loadState();
+      let syncTimer = null;
+      let typingTimeout = null;
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return structuredClone(defaultState);
+          const parsed = JSON.parse(raw);
+          return {
+            ...structuredClone(defaultState),
+            ...parsed,
+            user: { ...defaultState.user, ...(parsed.user || {}) },
+            prefs: { ...defaultState.prefs, ...(parsed.prefs || {}) }
+          };
+        } catch (_) {
+          return structuredClone(defaultState);
+        }
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (_) {}
+      }
+
+      function showToast(msg) {
+        const el = document.getElementById("toastBanner");
+        el.textContent = msg;
+        el.classList.add("show");
+        clearTimeout(showToast._t);
+        showToast._t = setTimeout(() => el.classList.remove("show"), 2400);
+      }
+
+      function escapeHtml(str) {
+        return String(str || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function formatTime(ts) {
+        const d = new Date(ts || Date.now());
+        return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      }
+
+      // Build Holiday String Lights
+      function initLights() {
+        const container = document.getElementById("stringLights");
+        container.innerHTML = "";
+        const count = 28;
+        for (let i = 0; i < count; i++) {
+          const bulb = document.createElement("span");
+          bulb.className = "bulb";
+          container.appendChild(bulb);
+        }
+      }
+
+      // Snow Animation
+      function initSnow() {
+        const canvas = document.getElementById("snowCanvas");
+        const ctx = canvas.getContext("2d");
+        let w = (canvas.width = window.innerWidth);
+        let h = (canvas.height = window.innerHeight);
+
+        const flakes = Array.from({ length: 65 }, () => ({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: 1.2 + Math.random() * 2.6,
+          vy: 0.6 + Math.random() * 1.4,
+          vx: -0.4 + Math.random() * 0.8
+        }));
+
+        window.addEventListener("resize", () => {
+          w = canvas.width = window.innerWidth;
+          h = canvas.height = window.innerHeight;
+        });
+
+        function tick() {
+          ctx.clearRect(0, 0, w, h);
+          if (state.prefs.snow) {
+            ctx.fillStyle = "rgba(224, 242, 254, 0.72)";
+            for (const f of flakes) {
+              ctx.beginPath();
+              ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+              ctx.fill();
+              f.y += f.vy;
+              f.x += f.vx;
+              if (f.y > h) {
+                f.y = -6;
+                f.x = Math.random() * w;
+              }
+              if (f.x > w) f.x = 0;
+              if (f.x < 0) f.x = w;
+            }
+          }
+          requestAnimationFrame(tick);
+        }
+        tick();
+      }
+
+      // Apply Appearance & Preferences
+      function applyPrefs() {
+        const p = state.prefs;
+        document.body.className = "";
+        if (p.theme === "aurora") document.body.classList.add("theme-aurora");
+        if (p.theme === "ember") document.body.classList.add("theme-ember");
+        if (p.theme === "violet") document.body.classList.add("theme-violet");
+        if (!p.glow) document.body.classList.add("no-glow");
+        if (!p.blur) document.body.classList.add("flat-glass");
+        if (p.compact) document.body.classList.add("compact-ui");
+
+        document.getElementById("stringLights").classList.toggle("hidden-lights", !p.lights);
+        document.getElementById("appShell").classList.toggle("hide-right", !!p.hideRight);
+
+        document.getElementById("themeSelect").value = p.theme;
+        document.getElementById("toggleSnow").checked = !!p.snow;
+        document.getElementById("toggleLights").checked = !!p.lights;
+        document.getElementById("toggleGlow").checked = !!p.glow;
+        document.getElementById("toggleBlur").checked = !!p.blur;
+        document.getElementById("toggleCompact").checked = !!p.compact;
+        document.getElementById("toggleHideRight").checked = !!p.hideRight;
+        document.getElementById("syncIntervalSelect").value = String(p.syncInterval);
+        document.getElementById("enterToSendCheck").checked = !!p.enterToSend;
+
+        restartSyncTimer();
+      }
+
+      function renderRightSidebar() {
+        const u = state.user;
+        document.getElementById("profileAvatar").textContent = (u.name || u.username || "G").charAt(0).toUpperCase();
+        document.getElementById("profileDisplayName").textContent = u.name || "Guest";
+        document.getElementById("profileHandle").textContent = "@" + (u.username || "guest");
+        document.getElementById("profileStatusLabel").textContent = u.status || "Browsing";
+        document.getElementById("quickStatusSelect").value = u.status || "Browsing";
+
+        const members = state.members || [];
+        document.getElementById("activeMembersCount").textContent = String(members.length);
+        const listEl = document.getElementById("rightMembersList");
+        listEl.innerHTML = members.length
+          ? members.map(m => `
+              <div class="member-chip">
+                <span style="font-family:var(--font-mono); font-size:12px;">@${escapeHtml(m.username)}</span>
+                <span style="display:flex; align-items:center; gap:5px; font-size:11px; color:var(--text-muted);">
+                  <span class="status-dot-sm status-${escapeHtml(m.status || "online")}"></span>
+                  ${escapeHtml(m.status || "online")}
+                </span>
+              </div>
+            `).join("")
+          : `<div class="empty-state">No active members synced.</div>`;
+      }
+
+      function renderLeftSidebar() {
+        document.getElementById("navFriendsCount").textContent = String(state.friends.length);
+        document.getElementById("navPollsCount").textContent = String(state.polls.length);
+
+        document.querySelectorAll(".left-sidebar .nav-item[data-view]").forEach(btn => {
+          const v = btn.dataset.view;
+          const b = btn.dataset.board;
+          let isActive = false;
+          if (state.view === "bulletins" && v === "bulletins") {
+            if (b && btn.classList.contains("board-btn")) {
+              isActive = state.activeBoard === b;
+            } else if (!btn.classList.contains("board-btn")) {
+              isActive = true;
+            }
+          } else if (state.view === v && v !== "bulletins") {
+            isActive = true;
+          }
+          btn.classList.toggle("active", isActive);
+        });
+
+        const groupsEl = document.getElementById("sidebarGroupsList");
+        groupsEl.innerHTML = state.groups.map(g => {
+          const active = state.view === "group_chat" && state.activeGroupId === g.id;
+          return `
+            <button class="nav-item ${active ? "active" : ""}" data-open-group="${escapeHtml(g.id)}">
+              <span class="nav-item-left"><span class="nav-item-label"># ${escapeHtml(g.name)}</span></span>
+              ${g.isPublic ? `<span class="badge-public">PUBLIC</span>` : ""}
+            </button>
+          `;
+        }).join("");
+
+        const dmTargets = Array.from(new Set(["hearth-bot", ...state.friends]));
+        const dmsEl = document.getElementById("sidebarDmsList");
+        dmsEl.innerHTML = dmTargets.map(handle => {
+          const active = state.view === "dm" && state.activeDmUser === handle;
+          return `
+            <button class="nav-item ${active ? "active" : ""}" data-open-dm="${escapeHtml(handle)}">
+              <span class="nav-item-left"><span class="nav-item-label">@${escapeHtml(handle)}</span></span>
+            </button>
+          `;
+        }).join("");
+      }
+
+      // Center View Renderers
+      function renderCenter() {
+        const stage = document.getElementById("centerStage");
+        if (state.view === "bulletins") {
+          renderBulletinsView(stage);
+        } else if (state.view === "friends") {
+          renderFriendsView(stage);
+        } else if (state.view === "polls") {
+          renderPollsView(stage);
+        } else if (state.view === "group_chat") {
+          renderGroupChatView(stage);
+        } else if (state.view === "dm") {
+          renderDmView(stage);
+        }
+      }
+
+      function renderBulletinsView(stage) {
+        const q = (state.searchQuery || "").trim().toLowerCase();
+        let list = state.bulletins.filter(post => {
+          const matchesBoard = !state.activeBoard || state.activeBoard === "International (Main)" || post.board === state.activeBoard;
+          const matchesCat = !state.activeCategory || state.activeCategory === "International" || post.category === state.activeCategory;
+          const matchesSearch = !q ||
+            (post.title || "").toLowerCase().includes(q) ||
+            (post.body || "").toLowerCase().includes(q) ||
+            (post.author || "").toLowerCase().includes(q) ||
+            (post.category || "").toLowerCase().includes(q);
+          return matchesBoard && matchesCat && matchesSearch;
+        });
+
+        list.sort((a, b) => {
+          if (a.pinned && !b.pinned) return -1;
+          if (!a.pinned && b.pinned) return 1;
+          return state.sortOrder === "oldest" ? a.createdAt - b.createdAt : b.createdAt - a.createdAt;
+        });
+
+        stage.innerHTML = `
+          <div class="stage-header">
+            <div>
+              <h1 class="stage-title">${escapeHtml(state.activeBoard || "International Bulletin")}</h1>
+              <div class="stage-subtitle">Main Parlour • Forums, replies, edit &amp; delete</div>
+            </div>
+            <div class="stage-controls">
+              <button class="primary-btn" id="newForumBtn">+ New Forum</button>
+              <select class="select-control" id="sortSelect">
+                <option value="newest" ${state.sortOrder === "newest" ? "selected" : ""}>Newest First</option>
+                <option value="oldest" ${state.sortOrder === "oldest" ? "selected" : ""}>Oldest First</option>
+              </select>
+            </div>
           </div>
-          <div style="font-size:12px;color:var(--text-muted);">${escapeHtml(target.custom_status || target.status)}</div>
-        </div>
-      </div>
-      <div style="background:#1e1f22;padding:10px;border-radius:6px;font-size:13px;">${escapeHtml(target.bio || "No bio set.")}</div>
-      <div style="display:flex;justify-content:flex-end;gap:8px;">
-        ${actionButton}<button class="btn btn-ghost" onclick="closeModal('profileModal')">Close</button>
-      </div>
-    `;
-    openModal("profileModal");
-  }
 
-  async function searchUsersLive() {
-    const q = document.getElementById("friendSearchInput").value.trim();
-    const pop = document.getElementById("friendSearchPopout");
-    if (!q) {
-      pop.classList.add("hidden");
-      return;
-    }
-    const res = await fetch("/api/users/search?q=" + encodeURIComponent(q));
-    const data = await res.json();
-    pop.innerHTML = data.results.length
-      ? data.results.map((u) => {
-          let action = `<button class="btn btn-sm btn-green" onclick="sendFriendRequest('${u.username}')">Add Friend</button>`;
-          if (u.relation === "friend") action = `<button class="btn btn-sm" onclick="openView('dm','${u.id}')">Message</button>`;
-          if (u.relation === "outgoing") action = `<span style="font-size:12px;color:var(--text-muted);">Pending</span>`;
-          if (u.relation === "incoming") action = `<button class="btn btn-sm btn-green" onclick="respondRequest('${u.id}','accept')">Accept</button>`;
-          return `<div class="popout-row" style="margin-bottom:0;border-radius:0;">
-            <div style="display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="openUserProfile('${u.id}')">
-              ${renderAvatarHTML(u, 28)}<span>@${escapeHtml(u.username)}</span><span class="status-dot st-${u.status}"></span>
-            </div>${action}</div>`;
-        }).join("")
-      : `<div class="popout-row" style="margin-bottom:0;color:var(--text-muted);font-size:13px;">No matching user</div>`;
-    pop.classList.remove("hidden");
-  }
+          <div class="pills-row">
+            ${CATEGORIES.map(cat => `
+              <button class="pill-btn ${state.activeCategory === cat ? "active" : ""}" data-cat="${escapeHtml(cat)}">${escapeHtml(cat)}</button>
+            `).join("")}
+          </div>
 
-  async function sendFriendRequest(username) {
-    await fetch("/api/friends/request", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username })
-    });
-    document.getElementById("friendSearchPopout").classList.add("hidden");
-    document.getElementById("friendSearchInput").value = "";
-    await syncNow();
-  }
+          <div class="search-bar-wrap">
+            <input type="text" class="search-input" id="forumSearchInput" value="${escapeHtml(state.searchQuery)}" placeholder="Search forums, tags, or authors..." />
+          </div>
 
-  async function respondRequest(userId, action) {
-    await fetch("/api/friends/respond", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user_id: userId, action })
-    });
-    await syncNow();
-  }
+          <div id="forumsContainer">
+            ${list.length ? list.map(post => `
+              <article class="card-box ${post.pinned ? "pinned" : ""}" data-post-id="${escapeHtml(post.id)}">
+                <div class="post-meta-top">
+                  <div class="post-author-row">
+                    <strong style="color:var(--text-main);">@${escapeHtml(post.author)}</strong>
+                    <span>•</span>
+                    <span>${formatTime(post.createdAt)}</span>
+                    <span class="tag-chip">${escapeHtml(post.category || "International")}</span>
+                    ${post.pinned ? `<span class="tag-chip" style="color:var(--holiday-gold); border-color:rgba(251,191,36,0.4);">PINNED</span>` : ""}
+                  </div>
+                </div>
+                <div class="post-title">${escapeHtml(post.title)}</div>
+                <div class="post-body">${escapeHtml(post.body)}</div>
 
-  function openCreateGcModal() {
-    if (!stateCache) return;
-    document.getElementById("gcNameInput").value = "";
-    document.getElementById("gcPublicCheck").checked = false;
-    const picker = document.getElementById("gcFriendPicker");
-    picker.classList.remove("hidden");
-    picker.innerHTML = stateCache.friends.length
-      ? stateCache.friends.map((f) =>
-          `<label style="font-size:13px;display:flex;align-items:center;gap:8px;"><input type="checkbox" class="gc-member-cb" value="${f.id}" />@${escapeHtml(f.username)}</label>`
-        ).join("")
-      : '<span style="font-size:12px;color:var(--text-muted);">Add friends first to invite them to a private GC.</span>';
-    openModal("createGcModal");
-  }
+                <div class="post-actions">
+                  <button class="ghost-btn" data-action="toggle-reply" data-id="${escapeHtml(post.id)}">Reply (${(post.replies || []).length})</button>
+                  <button class="ghost-btn" data-action="edit-post" data-id="${escapeHtml(post.id)}">Edit</button>
+                  <button class="ghost-btn" data-action="pin-post" data-id="${escapeHtml(post.id)}">${post.pinned ? "Unpin" : "Pin"}</button>
+                  <button class="danger-btn" data-action="delete-post" data-id="${escapeHtml(post.id)}">Delete</button>
+                </div>
 
-  function toggleGcFriendPicker() {
-    document.getElementById("gcFriendPicker").classList.toggle("hidden", document.getElementById("gcPublicCheck").checked);
-  }
+                <div class="replies-box" id="replies-${escapeHtml(post.id)}">
+                  ${(post.replies || []).map(r => `
+                    <div class="reply-item">
+                      <strong style="color:var(--accent); font-family:var(--font-mono);">@${escapeHtml(r.author)}</strong>: ${escapeHtml(r.text)}
+                    </div>
+                  `).join("")}
+                  <div style="display:flex; gap:6px; margin-top:4px;">
+                    <input type="text" class="text-input" data-reply-input="${escapeHtml(post.id)}" placeholder="Write a reply..." style="padding:6px 10px; font-size:12px;" />
+                    <button class="primary-btn" data-action="send-reply" data-id="${escapeHtml(post.id)}" style="padding:6px 11px; font-size:12px;">Post</button>
+                  </div>
+                </div>
+              </article>
+            `).join("") : `
+              <div class="empty-state">No forums in ${escapeHtml(state.activeCategory || "International")} yet.</div>
+            `}
+          </div>
+        `;
 
-  async function createGc() {
-    const name = document.getElementById("gcNameInput").value.trim();
-    const isPublic = document.getElementById("gcPublicCheck").checked;
-    const members = Array.from(document.querySelectorAll(".gc-member-cb:checked")).map((cb) => cb.value);
-    const res = await fetch("/api/gcs/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, is_public: isPublic, members })
-    });
-    const data = await res.json();
-    if (res.ok) {
-      closeModal("createGcModal");
-      await openView("gc", data.gc_id);
-    }
-  }
-
-  async function openView(kind, targetId) {
-    activeView = { kind, target_id: targetId };
-    clearReply();
-    document.getElementById("mentionPopup").classList.add("hidden");
-    if (kind === "dm" || kind === "gc") {
-      await fetch("/api/read", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kind, target_id: targetId })
-      });
-    }
-    await syncNow(true);
-  }
-
-  function setReply(msgId, author, text) {
-    replyToId = msgId;
-    document.getElementById("replyBannerText").textContent = `Replying to @${author}: ${String(text).slice(0, 50)}`;
-    document.getElementById("replyBanner").classList.remove("hidden");
-    document.getElementById("msgInput").focus();
-  }
-
-  function clearReply() {
-    replyToId = null;
-    document.getElementById("replyBanner").classList.add("hidden");
-  }
-
-  function handleMsgInput() {
-    const input = document.getElementById("msgInput");
-    const now = Date.now();
-    if (now - lastTypingSent > 1500 && (activeView.kind === "dm" || activeView.kind === "gc")) {
-      lastTypingSent = now;
-      fetch("/api/typing", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kind: activeView.kind, target_id: activeView.target_id, typing: true })
-      });
-    }
-
-    const popup = document.getElementById("mentionPopup");
-    if (activeView.kind !== "gc" || !stateCache || !stateCache.active) {
-      popup.classList.add("hidden");
-      return;
-    }
-    const before = input.value.slice(0, input.selectionStart);
-    const match = before.match(/(?:^|\s)@([a-zA-Z0-9_.]*)$/);
-    if (!match) {
-      popup.classList.add("hidden");
-      mentionMatches = [];
-      return;
-    }
-    const q = match[1].toLowerCase();
-    mentionMatches = stateCache.active.members.filter((m) => m.username.toLowerCase().startsWith(q));
-    if (!mentionMatches.length) {
-      popup.classList.add("hidden");
-      return;
-    }
-    mentionIndex = 0;
-    renderMentionPopup();
-  }
-
-  function renderMentionPopup() {
-    const popup = document.getElementById("mentionPopup");
-    popup.innerHTML = mentionMatches.map((m, idx) =>
-      `<div class="mention-option ${idx === mentionIndex ? "selected" : ""}" onclick="insertMention('${m.username}')">
-        <span class="status-dot st-${m.status}"></span><span>@${escapeHtml(m.username)}</span>
-      </div>`
-    ).join("");
-    popup.classList.remove("hidden");
-  }
-
-  function insertMention(username) {
-    const input = document.getElementById("msgInput");
-    const cursor = input.selectionStart;
-    input.value = input.value.slice(0, cursor).replace(/@([a-zA-Z0-9_.]*)$/, `@${username} `) + input.value.slice(cursor);
-    document.getElementById("mentionPopup").classList.add("hidden");
-    mentionMatches = [];
-    input.focus();
-  }
-
-  async function handleMsgKeydown(e) {
-    const popup = document.getElementById("mentionPopup");
-    if (!popup.classList.contains("hidden") && mentionMatches.length) {
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        mentionIndex = (mentionIndex + 1) % mentionMatches.length;
-        renderMentionPopup();
-        return;
+        document.getElementById("newForumBtn").onclick = openForumComposer;
+        document.getElementById("sortSelect").onchange = (e) => {
+          state.sortOrder = e.target.value;
+          saveState();
+          renderCenter();
+        };
+        document.getElementById("forumSearchInput").oninput = (e) => {
+          state.searchQuery = e.target.value;
+          saveState();
+          renderCenter();
+          const inp = document.getElementById("forumSearchInput");
+          inp.focus();
+          inp.setSelectionRange(inp.value.length, inp.value.length);
+        };
+        stage.querySelectorAll(".pill-btn[data-cat]").forEach(btn => {
+          btn.onclick = () => {
+            state.activeCategory = btn.dataset.cat;
+            saveState();
+            renderCenter();
+          };
+        });
       }
-      if (e.key === "ArrowUp") {
-        e.preventDefault();
-        mentionIndex = (mentionIndex - 1 + mentionMatches.length) % mentionMatches.length;
-        renderMentionPopup();
-        return;
+
+      function renderFriendsView(stage) {
+        stage.innerHTML = `
+          <div class="stage-header">
+            <div>
+              <h1 class="stage-title">Friends</h1>
+              <div class="stage-subtitle">Add friends by username, view your roster, and jump straight into DMs</div>
+            </div>
+          </div>
+
+          <div class="card-box">
+            <div class="post-title">Add Friend</div>
+            <div style="display:flex; gap:8px; margin-top:8px;">
+              <input type="text" class="text-input" id="addFriendInput" placeholder="Type username (no spaces)..." />
+              <button class="primary-btn" id="addFriendSubmitBtn">Add Friend</button>
+            </div>
+          </div>
+
+          <div class="card-box">
+            <div class="post-title">Friends (${state.friends.length})</div>
+            ${state.friends.length ? state.friends.map(f => `
+              <div class="member-chip" style="margin-top:8px; padding:10px 12px;">
+                <div>
+                  <strong style="font-family:var(--font-mono); color:var(--accent);">@${escapeHtml(f)}</strong>
+                  <span style="margin-left:8px; font-size:11.5px; color:var(--success);">• Online</span>
+                </div>
+                <div style="display:flex; gap:6px;">
+                  <button class="ghost-btn" data-dm-friend="${escapeHtml(f)}">Message</button>
+                  <button class="danger-btn" data-remove-friend="${escapeHtml(f)}">Remove</button>
+                </div>
+              </div>
+            `).join("") : `<div class="empty-state">No friends yet.</div>`}
+          </div>
+        `;
+
+        const addFn = () => {
+          const inp = document.getElementById("addFriendInput");
+          const raw = (inp.value || "").trim().replace(/^@+/, "").replace(/\s+/g, "");
+          if (!raw) return showToast("Enter a valid username with no spaces.");
+          if (raw === state.user.username) return showToast("You cannot add yourself.");
+          if (state.friends.includes(raw)) return showToast("@" + raw + " is already in your friends list.");
+          state.friends.push(raw);
+          if (!state.dmMessages[raw]) state.dmMessages[raw] = [];
+          saveState();
+          syncWithBackend("friend_add", { friend: raw });
+          showToast("Added @" + raw);
+          renderLeftSidebar();
+          renderCenter();
+        };
+
+        document.getElementById("addFriendSubmitBtn").onclick = addFn;
+        document.getElementById("addFriendInput").onkeydown = (e) => {
+          if (e.key === "Enter") addFn();
+        };
+
+        stage.querySelectorAll("[data-dm-friend]").forEach(btn => {
+          btn.onclick = () => {
+            state.view = "dm";
+            state.activeDmUser = btn.dataset.dmFriend;
+            saveState();
+            renderLeftSidebar();
+            renderCenter();
+          };
+        });
+
+        stage.querySelectorAll("[data-remove-friend]").forEach(btn => {
+          btn.onclick = () => {
+            state.friends = state.friends.filter(x => x !== btn.dataset.removeFriend);
+            saveState();
+            renderLeftSidebar();
+            renderCenter();
+          };
+        });
       }
-      if (e.key === "Enter" || e.key === "Tab") {
-        e.preventDefault();
-        insertMention(mentionMatches[mentionIndex].username);
-        return;
+
+      function renderPollsView(stage) {
+        stage.innerHTML = `
+          <div class="stage-header">
+            <div>
+              <h1 class="stage-title">Polls</h1>
+              <div class="stage-subtitle">Community votes and live results</div>
+            </div>
+            <button class="primary-btn" id="createPollBtn">+ New Poll</button>
+          </div>
+
+          ${state.polls.length ? state.polls.map(poll => {
+            const totalVotes = poll.options.reduce((acc, o) => acc + (o.votes || 0), 0) || 1;
+            return `
+              <div class="card-box">
+                <div class="post-meta-top">
+                  <span class="tag-chip">POLL</span>
+                  <span style="font-size:12px; color:var(--text-muted);">by @${escapeHtml(poll.author)} • ${poll.options.reduce((acc, o) => acc + (o.votes || 0), 0)} votes</span>
+                </div>
+                <div class="post-title">${escapeHtml(poll.question)}</div>
+                ${poll.options.map(opt => {
+                  const pct = Math.round(((opt.votes || 0) / totalVotes) * 100);
+                  const picked = poll.userVotedOptionId === opt.id;
+                  return `
+                    <div class="poll-option-row">
+                      <button class="poll-bar-btn" data-vote-poll="${escapeHtml(poll.id)}" data-vote-opt="${escapeHtml(opt.id)}" style="${picked ? "border-color:var(--accent);" : ""}">
+                        <span class="poll-fill" style="width:${pct}%;"></span>
+                        <span style="position:relative; z-index:1;">${picked ? "✓ " : ""}${escapeHtml(opt.label)}</span>
+                        <span style="position:relative; z-index:1; font-family:var(--font-mono); font-size:11.5px; color:var(--accent);">${opt.votes || 0} (${pct}%)</span>
+                      </button>
+                    </div>
+                  `;
+                }).join("")}
+              </div>
+            `;
+          }).join("") : `<div class="empty-state">No active polls yet.</div>`}
+        `;
+
+        document.getElementById("createPollBtn").onclick = openPollComposer;
+        stage.querySelectorAll("[data-vote-poll]").forEach(btn => {
+          btn.onclick = () => {
+            const poll = state.polls.find(p => p.id === btn.dataset.votePoll);
+            if (!poll) return;
+            const prevOpt = poll.options.find(o => o.id === poll.userVotedOptionId);
+            if (prevOpt && prevOpt.votes > 0) prevOpt.votes -= 1;
+            const nextOpt = poll.options.find(o => o.id === btn.dataset.voteOpt);
+            if (nextOpt) nextOpt.votes = (nextOpt.votes || 0) + 1;
+            poll.userVotedOptionId = btn.dataset.voteOpt;
+            saveState();
+            renderCenter();
+          };
+        });
       }
-    }
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      await sendMessage();
-    }
-  }
 
-  async function sendMessage() {
-    const input = document.getElementById("msgInput");
-    const text = input.value.trim();
-    if (!text || (activeView.kind !== "dm" && activeView.kind !== "gc")) return;
-    input.value = "";
-    const currentReply = replyToId;
-    clearReply();
-    await fetch("/api/messages/send", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        kind: activeView.kind,
-        target_id: activeView.target_id,
-        text,
-        reply_to: currentReply
-      })
-    });
-    await syncNow(true);
-  }
+      function renderGroupChatView(stage) {
+        const group = state.groups.find(g => g.id === state.activeGroupId) || state.groups[0];
+        const msgs = state.groupMessages[group.id] || [];
+        const pinText = state.pins[group.id] || "";
 
-  async function editMessagePrompt(msgId, oldText) {
-    const next = window.prompt("Edit message:", oldText);
-    if (next === null || !next.trim()) return;
-    await fetch("/api/messages/edit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        kind: activeView.kind,
-        target_id: activeView.target_id,
-        msg_id: msgId,
-        text: next.trim()
-      })
-    });
-    await syncNow();
-  }
+        stage.innerHTML = `
+          <div class="chat-layout">
+            <div class="stage-header" style="margin-bottom:8px;">
+              <div>
+                <h1 class="stage-title"># ${escapeHtml(group.name)}</h1>
+                <div class="stage-subtitle">Group Chat • ${group.isPublic ? "Public Lounge" : "Private Group"}</div>
+              </div>
+              <button class="ghost-btn" id="createGroupInlineBtn">+ New Group</button>
+            </div>
 
-  async function deleteMessage(msgId) {
-    await fetch("/api/messages/delete", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        kind: activeView.kind,
-        target_id: activeView.target_id,
-        msg_id: msgId
-      })
-    });
-    await syncNow();
-  }
+            ${pinText ? `
+              <div class="pins-bar">
+                <span>📌 <strong>Pinned:</strong> ${escapeHtml(pinText)}</span>
+                <button class="ghost-btn" id="clearPinBtn" style="padding:3px 8px; font-size:11px;">Clear</button>
+              </div>
+            ` : ""}
 
-  async function togglePin(msgId) {
-    const res = await fetch("/api/gcs/pin", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ gc_id: activeView.target_id, msg_id: msgId })
-    });
-    if (!res.ok) {
-      const data = await res.json();
-      window.alert(data.error || "Cannot pin this message.");
-    }
-    await syncNow();
-  }
+            <div class="messages-stream" id="messagesStream">
+              ${msgs.length ? msgs.map(m => `
+                <div class="msg-row ${m.pinned ? "pinned" : ""}">
+                  <div class="msg-head">
+                    <span class="msg-user">@${escapeHtml(m.author)}</span>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <span class="msg-time">${escapeHtml(m.time || "")}</span>
+                      <button class="ghost-btn" data-pin-msg="${escapeHtml(m.text)}" style="padding:2px 7px; font-size:10.5px;">Pin</button>
+                    </div>
+                  </div>
+                  <div class="post-body">${escapeHtml(m.text)}</div>
+                </div>
+              `).join("") : `<div class="empty-state">No messages in #${escapeHtml(group.name)} yet.</div>`}
+            </div>
 
-  function openPinsModal() {
-    if (!stateCache || !stateCache.active) return;
-    const pins = stateCache.active.pins || [];
-    document.getElementById("pinsList").innerHTML = pins.length
-      ? pins.map((p) => `<div style="background:#1e1f22;padding:8px;border-radius:6px;"><strong>@${escapeHtml(p.author_username)}</strong>: ${formatMessageText(p.text)}</div>`).join("")
-      : '<div style="color:var(--text-muted);font-size:13px;">No pinned messages.</div>';
-    openModal("pinsModal");
-  }
+            <div class="typing-bar" id="typingIndicatorBar"></div>
 
-  async function submitBulletin() {
-    const title = document.getElementById("bullTitle").value.trim();
-    const body = document.getElementById("bullBody").value.trim();
-    const res = await fetch("/api/bulletin/post", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, body })
-    });
-    if (res.ok) {
-      document.getElementById("bullTitle").value = "";
-      document.getElementById("bullBody").value = "";
-      await syncNow();
-    }
-  }
+            <div class="chat-compose">
+              <input type="text" class="text-input" id="chatMessageInput" placeholder="Message #${escapeHtml(group.name)}..." />
+              <button class="primary-btn" id="sendChatBtn">Send</button>
+            </div>
+          </div>
+        `;
 
-  async function deleteBulletin(postId) {
-    await fetch("/api/bulletin/delete", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ post_id: postId })
-    });
-    await syncNow();
-  }
+        bindChatComposer("group", group.id);
+        renderTypingBar();
 
-  async function submitPoll() {
-    const question = document.getElementById("pollQuestion").value.trim();
-    const options = document.getElementById("pollOptions").value.split(",").map((s) => s.trim()).filter(Boolean);
-    const res = await fetch("/api/polls/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question, options })
-    });
-    if (res.ok) {
-      document.getElementById("pollQuestion").value = "";
-      document.getElementById("pollOptions").value = "";
-      await syncNow();
-    }
-  }
+        const clearPinBtn = document.getElementById("clearPinBtn");
+        if (clearPinBtn) {
+          clearPinBtn.onclick = () => {
+            state.pins[group.id] = "";
+            saveState();
+            renderCenter();
+          };
+        }
+        stage.querySelectorAll("[data-pin-msg]").forEach(btn => {
+          btn.onclick = () => {
+            state.pins[group.id] = btn.dataset.pinMsg;
+            saveState();
+            showToast("Pinned message in #" + group.name);
+            renderCenter();
+          };
+        });
+        document.getElementById("createGroupInlineBtn").onclick = openGroupComposer;
+      }
 
-  async function votePoll(pollId, optionId) {
-    await fetch("/api/polls/vote", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ poll_id: pollId, option_id: optionId })
-    });
-    await syncNow();
-  }
+      function renderDmView(stage) {
+        const target = state.activeDmUser || "hearth-bot";
+        const msgs = state.dmMessages[target] || [];
 
-  async function syncNow(scrollBottom = false) {
-    const res = await fetch(`/api/sync?kind=${encodeURIComponent(activeView.kind)}&target_id=${encodeURIComponent(activeView.target_id)}`);
-    const data = await res.json();
-    if (!data.authenticated) {
-      openModal("authModal");
-      return;
-    }
-    closeModal("authModal");
-    stateCache = data;
-    const me = data.me;
+        stage.innerHTML = `
+          <div class="chat-layout">
+            <div class="stage-header" style="margin-bottom:8px;">
+              <div>
+                <h1 class="stage-title">@${escapeHtml(target)}</h1>
+                <div class="stage-subtitle">Direct Message</div>
+              </div>
+            </div>
 
-    document.getElementById("meUsername").textContent = "@" + me.username;
-    document.getElementById("meCustomStatus").textContent = me.custom_status || me.status;
-    document.getElementById("meStatusDot").className = `status-dot st-${me.status}`;
-    const meAvatar = document.getElementById("meAvatar");
-    meAvatar.innerHTML = me.avatar ? `<img src="${escapeHtml(me.avatar)}" />` : me.username[0].toUpperCase();
+            <div class="messages-stream" id="messagesStream">
+              ${msgs.length ? msgs.map(m => `
+                <div class="msg-row">
+                  <div class="msg-head">
+                    <span class="msg-user">@${escapeHtml(m.author)}</span>
+                    <span class="msg-time">${escapeHtml(m.time || "")}</span>
+                  </div>
+                  <div class="post-body">${escapeHtml(m.text)}</div>
+                </div>
+              `).join("") : `<div class="empty-state">Start a direct conversation with @${escapeHtml(target)}.</div>`}
+            </div>
 
-    document.getElementById("friendsRedDot").classList.toggle("hidden", data.incoming.length === 0);
-    document.getElementById("navFriends").classList.toggle("active", activeView.kind === "friends");
-    document.getElementById("navBulletin").classList.toggle("active", activeView.kind === "bulletin");
-    document.getElementById("navPolls").classList.toggle("active", activeView.kind === "polls");
+            <div class="typing-bar" id="typingIndicatorBar"></div>
 
-    document.getElementById("gcNavList").innerHTML = data.gcs.map((gc) => {
-      const isAct = activeView.kind === "gc" && activeView.target_id === gc.id;
-      const showDot = gc.mention_unread && !isAct;
-      return `<div class="nav-item ${isAct ? "active" : ""}" onclick="openView('gc','${gc.id}')">
-        <div class="nav-item-left"><span>#</span><span class="nav-item-label">${escapeHtml(gc.name)}</span></div>
-        ${showDot ? '<span class="red-dot"></span>' : ""}
-      </div>`;
-    }).join("");
+            <div class="chat-compose">
+              <input type="text" class="text-input" id="chatMessageInput" placeholder="Message @${escapeHtml(target)}..." />
+              <button class="primary-btn" id="sendChatBtn">Send</button>
+            </div>
+          </div>
+        `;
 
-    document.getElementById("dmNavList").innerHTML = data.dms.map((dm) => {
-      const u = dm.user;
-      const isAct = activeView.kind === "dm" && activeView.target_id === u.id;
-      const showDot = dm.unread && !isAct;
-      return `<div class="nav-item ${isAct ? "active" : ""}" onclick="openView('dm','${u.id}')">
-        <div class="nav-item-left"><span class="status-dot st-${u.status}"></span><span class="nav-item-label">@${escapeHtml(u.username)}</span></div>
-        ${showDot ? '<span class="red-dot"></span>' : ""}
-      </div>`;
-    }).join("");
+        bindChatComposer("dm", target);
+        renderTypingBar();
+      }
 
-    document.getElementById("friendsPane").classList.toggle("hidden", activeView.kind !== "friends");
-    document.getElementById("bulletinPane").classList.toggle("hidden", activeView.kind !== "bulletin");
-    document.getElementById("pollsPane").classList.toggle("hidden", activeView.kind !== "polls");
-    document.getElementById("chatPane").classList.toggle("hidden", activeView.kind !== "dm" && activeView.kind !== "gc");
+      function bindChatComposer(mode, targetKey) {
+        const input = document.getElementById("chatMessageInput");
+        const sendBtn = document.getElementById("sendChatBtn");
 
-    if (activeView.kind === "friends") {
-      document.getElementById("headerTitle").textContent = "Friends";
-      document.getElementById("headerControls").innerHTML = "";
+        const send = () => {
+          const text = (input.value || "").trim();
+          if (!text) return;
+          const entry = {
+            id: "msg-" + Date.now(),
+            author: state.user.username || "guest",
+            text,
+            time: formatTime(Date.now()),
+            pinned: false
+          };
+          if (mode === "group") {
+            if (!state.groupMessages[targetKey]) state.groupMessages[targetKey] = [];
+            state.groupMessages[targetKey].push(entry);
+          } else {
+            if (!state.dmMessages[targetKey]) state.dmMessages[targetKey] = [];
+            state.dmMessages[targetKey].push(entry);
+          }
+          input.value = "";
+          saveState();
+          syncWithBackend("message", { mode, target: targetKey, message: entry });
+          renderCenter();
+          const stream = document.getElementById("messagesStream");
+          if (stream) stream.scrollTop = stream.scrollHeight;
+        };
 
-      const incSec = document.getElementById("incomingSection");
-      incSec.classList.toggle("hidden", data.incoming.length === 0);
-      document.getElementById("incomingList").innerHTML = data.incoming.map((u) =>
-        `<div class="popout-row"><div style="display:flex;align-items:center;gap:8px;">${renderAvatarHTML(u, 30)}<strong>@${escapeHtml(u.username)}</strong></div>
-        <div style="display:flex;gap:6px;"><button class="btn btn-sm btn-green" onclick="respondRequest('${u.id}','accept')">Accept</button>
-        <button class="btn btn-sm btn-red" onclick="respondRequest('${u.id}','decline')">Ignore</button></div></div>`
-      ).join("");
+        sendBtn.onclick = send;
+        input.oninput = () => {
+          emitTyping(targetKey);
+        };
+        input.onkeydown = (e) => {
+          if (state.prefs.enterToSend && e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            send();
+          }
+        };
+      }
 
-      const outSec = document.getElementById("outgoingSection");
-      outSec.classList.toggle("hidden", data.outgoing.length === 0);
-      document.getElementById("outgoingList").innerHTML = data.outgoing.map((u) =>
-        `<div class="popout-row"><div style="display:flex;align-items:center;gap:8px;">${renderAvatarHTML(u, 30)}<span>@${escapeHtml(u.username)}</span></div>
-        <span style="font-size:12px;color:var(--text-muted);">Pending</span></div>`
-      ).join("");
+      function emitTyping(channel) {
+        const me = state.user.username || "guest";
+        if (!state.typingUsers.includes(me)) {
+          state.typingUsers.push(me);
+        }
+        renderTypingBar();
+        syncWithBackend("typing", { channel, username: me, typing: true });
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => {
+          state.typingUsers = state.typingUsers.filter(u => u !== me);
+          renderTypingBar();
+          syncWithBackend("typing", { channel, username: me, typing: false });
+        }, 2200);
+      }
 
-      document.getElementById("friendsList").innerHTML = data.friends.length
-        ? data.friends.map((u) =>
-            `<div class="popout-row"><div style="display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="openUserProfile('${u.id}')">
-            ${renderAvatarHTML(u, 34)}<div><div style="display:flex;align-items:center;gap:6px;"><strong>@${escapeHtml(u.username)}</strong>
-            <span class="status-dot st-${u.status}"></span></div><div style="font-size:12px;color:var(--text-muted);">${escapeHtml(u.custom_status || u.status)}</div></div></div>
-            <button class="btn btn-sm" onclick="openView('dm','${u.id}')">Message</button></div>`
-          ).join("")
-        : '<div style="color:var(--text-muted);font-size:13px;">No friends yet.</div>';
-      return;
-    }
+      function renderTypingBar() {
+        const bar = document.getElementById("typingIndicatorBar");
+        if (!bar) return;
+        const others = (state.typingUsers || []).filter(Boolean);
+        if (!others.length) {
+          bar.textContent = "";
+          return;
+        }
+        bar.textContent = others.length === 1
+          ? `@${others[0]} is typing...`
+          : `${others.map(u => "@" + u).join(", ")} are typing...`;
+      }
 
-    if (activeView.kind === "bulletin") {
-      document.getElementById("headerTitle").textContent = "Bulletin Board";
-      document.getElementById("headerControls").innerHTML = "";
-      document.getElementById("bulletinList").innerHTML = (data.bulletin || []).map((p) =>
-        `<div class="board-card"><div style="display:flex;justify-content:space-between;align-items:center;">
-        <strong>${escapeHtml(p.title)}</strong>
-        ${p.author_id === me.id ? `<button class="btn btn-sm btn-red" onclick="deleteBulletin('${p.id}')">Delete</button>` : ""}
-        </div><div style="font-size:12px;color:var(--text-muted);margin:4px 0 8px;">by @${escapeHtml(p.author_username)}</div>
-        <div style="font-size:14px;">${escapeHtml(p.body)}</div></div>`
-      ).join("");
-      return;
-    }
+      // Composers
+      function openModal(id) {
+        document.getElementById(id).classList.add("open");
+      }
 
-    if (activeView.kind === "polls") {
-      document.getElementById("headerTitle").textContent = "Polls";
-      document.getElementById("headerControls").innerHTML = "";
-      document.getElementById("pollsList").innerHTML = (data.polls || []).map((pl) => {
-        const total = pl.options.reduce((acc, o) => acc + o.votes.length, 0);
-        return `<div class="board-card"><div style="font-weight:700;margin-bottom:4px;">${escapeHtml(pl.question)}</div>
-          <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">by @${escapeHtml(pl.author_username)} · ${total} votes</div>
-          ${pl.options.map((o) => {
-            const voted = o.votes.includes(me.id);
-            const pct = total ? Math.round((o.votes.length / total) * 100) : 0;
-            return `<div class="poll-opt ${voted ? "voted" : ""}" onclick="votePoll('${pl.id}','${o.id}')">
-              <span>${escapeHtml(o.label)}</span><strong>${o.votes.length} (${pct}%)</strong></div>`;
-          }).join("")}</div>`;
-      }).join("");
-      return;
-    }
+      function closeModal(id) {
+        document.getElementById(id).classList.remove("open");
+      }
 
-    const act = data.active;
-    if (activeView.kind === "dm") {
-      const peer = data.users[activeView.target_id];
-      document.getElementById("headerTitle").innerHTML = peer
-        ? `<span class="status-dot st-${peer.status}"></span> @${escapeHtml(peer.username)}`
-        : "Direct Message";
-      document.getElementById("headerControls").innerHTML = "";
-    } else {
-      const gcMeta = data.gcs.find((g) => g.id === activeView.target_id);
-      const badge = act.is_public
-        ? '<span class="badge-public">Public GC (Pins Off)</span>'
-        : '<span class="badge-private">Private GC</span>';
-      document.getElementById("headerTitle").innerHTML = `# ${escapeHtml(gcMeta ? gcMeta.name : "gc")} ${badge}`;
-      document.getElementById("headerControls").innerHTML = act.is_public
-        ? ""
-        : `<button class="btn btn-sm btn-ghost" onclick="openPinsModal()">Pins (${(act.pins || []).length})</button>`;
-    }
+      function openForumComposer(existingPost = null) {
+        document.getElementById("composerTitle").textContent = existingPost ? "Edit Forum Post" : "Create New Forum / Bulletin";
+        document.getElementById("composerBody").innerHTML = `
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <input type="text" class="text-input" id="compTitle" value="${escapeHtml(existingPost ? existingPost.title : "")}" placeholder="Forum title..." />
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+              <select class="select-control" id="compBoard">
+                ${BOARDS.map(b => `<option value="${escapeHtml(b)}" ${(existingPost ? existingPost.board : state.activeBoard) === b ? "selected" : ""}>${escapeHtml(b)}</option>`).join("")}
+              </select>
+              <select class="select-control" id="compCategory">
+                ${CATEGORIES.map(c => `<option value="${escapeHtml(c)}" ${(existingPost ? existingPost.category : state.activeCategory) === c ? "selected" : ""}>${escapeHtml(c)}</option>`).join("")}
+              </select>
+            </div>
+            <textarea class="textarea-input" id="compBody" placeholder="Write your bulletin or forum body...">${escapeHtml(existingPost ? existingPost.body : "")}</textarea>
+            <div style="display:flex; justify-content:flex-end; gap:8px;">
+              <button class="ghost-btn" data-close="composerModal">Cancel</button>
+              <button class="primary-btn" id="saveForumBtn">${existingPost ? "Save Changes" : "Publish Post"}</button>
+            </div>
+          </div>
+        `;
+        openModal("composerModal");
 
-    const listEl = document.getElementById("messagesList");
-    const wasAtBottom = listEl.scrollHeight - listEl.scrollTop - listEl.clientHeight < 60;
-    listEl.innerHTML = act.messages.map((m) => {
-      const isMine = m.author_id === me.id;
-      const authorObj = data.users[m.author_id] || { id: m.author_id, username: m.author_username, avatar: m.author_avatar };
-      const timeStr = new Date(m.ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-      const replyHtml = m.reply_to
-        ? `<div class="reply-quote">Replying to <strong>@${escapeHtml(m.reply_to.author_username)}</strong>: ${escapeHtml(m.reply_to.text)}</div>`
-        : "";
-      const pinBtn = (activeView.kind === "gc" && !act.is_public) ? `<button onclick="togglePin('${m.id}')">Pin</button>` : "";
-      const ownBtns = isMine
-        ? `<button onclick="editMessagePrompt('${m.id}', ${JSON.stringify(m.text)})">Edit</button>
-           <button style="color:var(--red);" onclick="deleteMessage('${m.id}')">Delete</button>`
-        : "";
+        document.getElementById("saveForumBtn").onclick = () => {
+          const title = (document.getElementById("compTitle").value || "").trim();
+          const body = (document.getElementById("compBody").value || "").trim();
+          const board = document.getElementById("compBoard").value;
+          const category = document.getElementById("compCategory").value;
+          if (!title || !body) return showToast("Title and body are required.");
 
-      return `<div class="msg-card" id="${m.id}">
-        ${renderAvatarHTML(authorObj, 36)}
-        <div class="msg-content">${replyHtml}
-          <div class="msg-header"><span class="msg-author" onclick="openUserProfile('${m.author_id}')">@${escapeHtml(m.author_username)}</span>
-          <span class="msg-time">${timeStr} ${m.edited ? "(edited)" : ""}</span></div>
-          <div class="msg-text">${formatMessageText(m.text)}</div>
-        </div>
-        <div class="msg-actions">
-          <button onclick="setReply('${m.id}', '${escapeHtml(m.author_username)}', ${JSON.stringify(m.text)})">Reply</button>
-          ${pinBtn}${ownBtns}
-        </div>
-      </div>`;
-    }).join("");
+          if (existingPost) {
+            existingPost.title = title;
+            existingPost.body = body;
+            existingPost.board = board;
+            existingPost.category = category;
+            showToast("Updated forum post.");
+          } else {
+            state.bulletins.unshift({
+              id: "b-" + Date.now(),
+              board,
+              category,
+              title,
+              body,
+              author: state.user.username || "guest",
+              createdAt: Date.now(),
+              pinned: false,
+              replies: []
+            });
+            showToast("Published forum post.");
+          }
+          saveState();
+          syncWithBackend("bulletin", { title, body, board, category });
+          closeModal("composerModal");
+          renderCenter();
+        };
+      }
 
-    if (scrollBottom || wasAtBottom) {
-      listEl.scrollTop = listEl.scrollHeight;
-    }
+      function openPollComposer() {
+        document.getElementById("composerTitle").textContent = "Create New Poll";
+        document.getElementById("composerBody").innerHTML = `
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <input type="text" class="text-input" id="pollQuestionInput" placeholder="Ask a question..." />
+            <input type="text" class="text-input" id="pollOptionsInput" placeholder="Options separated by commas (e.g. Option A, Option B, Option C)" />
+            <div style="display:flex; justify-content:flex-end; gap:8px;">
+              <button class="ghost-btn" data-close="composerModal">Cancel</button>
+              <button class="primary-btn" id="savePollBtn">Create Poll</button>
+            </div>
+          </div>
+        `;
+        openModal("composerModal");
 
-    document.getElementById("typingBar").textContent = (act.typing && act.typing.length)
-      ? act.typing.map((u) => "@" + u).join(", ") + (act.typing.length > 1 ? " are typing..." : " is typing...")
-      : "";
+        document.getElementById("savePollBtn").onclick = () => {
+          const q = (document.getElementById("pollQuestionInput").value || "").trim();
+          const optsRaw = (document.getElementById("pollOptionsInput").value || "")
+            .split(",")
+            .map(s => s.trim())
+            .filter(Boolean);
+          if (!q || optsRaw.length < 2) return showToast("Enter a question and at least 2 comma-separated options.");
+          state.polls.unshift({
+            id: "p-" + Date.now(),
+            question: q,
+            author: state.user.username || "guest",
+            options: optsRaw.map((label, idx) => ({ id: "o-" + Date.now() + "-" + idx, label, votes: 0 })),
+            userVotedOptionId: null
+          });
+          saveState();
+          closeModal("composerModal");
+          renderLeftSidebar();
+          renderCenter();
+        };
+      }
 
-    document.getElementById("membersRail").innerHTML = `
-      <div class="nav-section-title">Members — ${act.members.length}</div>
-      ${act.members.map((u) => `<div class="nav-item" onclick="openUserProfile('${u.id}')">
-        <div class="nav-item-left"><span class="status-dot st-${u.status}"></span><span class="nav-item-label">@${escapeHtml(u.username)}</span></div>
-      </div>`).join("")}
-    `;
-  }
+      function openGroupComposer() {
+        document.getElementById("composerTitle").textContent = "Create Group Chat";
+        document.getElementById("composerBody").innerHTML = `
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <input type="text" class="text-input" id="groupNameInput" placeholder="Group name (e.g. night-coders)" />
+            <label style="font-size:12.5px; display:flex; align-items:center; gap:8px;">
+              <input type="checkbox" id="groupPublicCheck" checked /> Public Group
+            </label>
+            <div style="display:flex; justify-content:flex-end; gap:8px;">
+              <button class="ghost-btn" data-close="composerModal">Cancel</button>
+              <button class="primary-btn" id="saveGroupBtn">Create Group</button>
+            </div>
+          </div>
+        `;
+        openModal("composerModal");
 
-  let syncing = false;
-  window.setInterval(async () => {
-    if (syncing) return;
-    syncing = true;
-    try {
-      await syncNow(false);
-    } finally {
-      syncing = false;
-    }
-  }, 2000);
+        document.getElementById("saveGroupBtn").onclick = () => {
+          const rawName = (document.getElementById("groupNameInput").value || "").trim().toLowerCase().replace(/\s+/g, "-");
+          const isPublic = document.getElementById("groupPublicCheck").checked;
+          if (!rawName) return showToast("Enter a group name.");
+          if (!state.groups.some(g => g.id === rawName)) {
+            state.groups.push({ id: rawName, name: rawName, isPublic });
+            state.groupMessages[rawName] = [];
+          }
+          state.view = "group_chat";
+          state.activeGroupId = rawName;
+          saveState();
+          closeModal("composerModal");
+          renderLeftSidebar();
+          renderCenter();
+        };
+      }
 
-  syncNow(true);
-</script>
+      // Backend Sync Helper (gracefully integrates if Flask exposes /sync or /api/sync)
+      async function syncWithBackend(eventType = "poll_sync", payload = {}) {
+        const statusText = document.getElementById("syncStatusText");
+        try {
+          const endpoint = eventType === "poll_sync" ? "/sync" : "/api/" + eventType;
+          const opts = eventType === "poll_sync"
+            ? { method: "GET" }
+            : {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ...payload, username: state.user.username })
+              };
+          const res = await fetch(endpoint, opts);
+          if (res.ok) {
+            const ct = res.headers.get("content-type") || "";
+            if (ct.includes("application/json")) {
+              const data = await res.json();
+              if (Array.isArray(data.members)) state.members = data.members;
+              if (Array.isArray(data.typing)) state.typingUsers = data.typing;
+              if (data.pins && typeof data.pins === "object") {
+                state.pins = { ...state.pins, ...data.pins };
+              }
+              renderRightSidebar();
+              renderTypingBar();
+            }
+            statusText.textContent = "Synced";
+          }
+        } catch (_) {
+          statusText.textContent = "Local + Live Ready";
+        }
+      }
+
+      function restartSyncTimer() {
+        clearInterval(syncTimer);
+        const ms = Number(state.prefs.syncInterval || 0);
+        if (ms > 0) {
+          syncTimer = setInterval(() => syncWithBackend("poll_sync"), ms);
+        }
+      }
+
+      // Global Event Wiring
+      function bindEvents() {
+        document.querySelectorAll(".left-sidebar .nav-item[data-view]").forEach(btn => {
+          btn.onclick = () => {
+            state.view = btn.dataset.view;
+            if (btn.dataset.board) {
+              state.activeBoard = btn.dataset.board;
+              if (btn.dataset.board !== "International (Main)" && CATEGORIES.includes(btn.dataset.board)) {
+                state.activeCategory = btn.dataset.board;
+              } else {
+                state.activeCategory = "International";
+              }
+            }
+            saveState();
+            renderLeftSidebar();
+            renderCenter();
+          };
+        });
+
+        document.querySelectorAll(".nav-item.locked").forEach(btn => {
+          btn.onclick = () => showToast(btn.dataset.locked + " is marked upcoming.");
+        });
+
+        document.getElementById("sidebarGroupsList").addEventListener("click", (e) => {
+          const btn = e.target.closest("[data-open-group]");
+          if (!btn) return;
+          state.view = "group_chat";
+          state.activeGroupId = btn.dataset.openGroup;
+          saveState();
+          renderLeftSidebar();
+          renderCenter();
+        });
+
+        document.getElementById("sidebarDmsList").addEventListener("click", (e) => {
+          const btn = e.target.closest("[data-open-dm]");
+          if (!btn) return;
+          state.view = "dm";
+          state.activeDmUser = btn.dataset.openDm;
+          saveState();
+          renderLeftSidebar();
+          renderCenter();
+        });
+
+        document.getElementById("centerStage").addEventListener("click", (e) => {
+          const actionBtn = e.target.closest("[data-action]");
+          if (!actionBtn) return;
+          const action = actionBtn.dataset.action;
+          const id = actionBtn.dataset.id;
+          const post = state.bulletins.find(p => p.id === id);
+          if (!post) return;
+
+          if (action === "delete-post") {
+            state.bulletins = state.bulletins.filter(p => p.id !== id);
+            saveState();
+            renderCenter();
+            showToast("Deleted forum post.");
+          } else if (action === "pin-post") {
+            post.pinned = !post.pinned;
+            saveState();
+            renderCenter();
+          } else if (action === "edit-post") {
+            openForumComposer(post);
+          } else if (action === "send-reply") {
+            const inp = document.querySelector(`[data-reply-input="${id}"]`);
+            const text = (inp && inp.value || "").trim();
+            if (!text) return;
+            post.replies = post.replies || [];
+            post.replies.push({
+              id: "r-" + Date.now(),
+              author: state.user.username || "guest",
+              text,
+              createdAt: Date.now()
+            });
+            saveState();
+            renderCenter();
+          } else if (action === "toggle-reply") {
+            const inp = document.querySelector(`[data-reply-input="${id}"]`);
+            if (inp) inp.focus();
+          }
+        });
+
+        document.getElementById("quickComposeBtn").onclick = () => {
+          if (state.view === "polls") openPollComposer();
+          else if (state.view === "group_chat") openGroupComposer();
+          else openForumComposer();
+        };
+
+        document.getElementById("createGroupBtn").onclick = openGroupComposer;
+
+        document.getElementById("openAppearanceBtn").onclick = () => openModal("appearanceModal");
+        document.getElementById("openSettingsBtn").onclick = () => {
+          document.getElementById("accountNameInput").value = state.user.name || "";
+          document.getElementById("accountHandleInput").value = state.user.username || "";
+          openModal("settingsModal");
+        };
+        document.getElementById("quickAccountBtn").onclick = () => {
+          document.getElementById("openSettingsBtn").click();
+        };
+
+        document.getElementById("quickStatusSelect").onchange = (e) => {
+          state.user.status = e.target.value;
+          saveState();
+          renderRightSidebar();
+        };
+
+        document.querySelectorAll("[data-close]").forEach(btn => {
+          btn.onclick = () => closeModal(btn.dataset.close);
+        });
+
+        document.querySelectorAll(".modal-backdrop").forEach(backdrop => {
+          backdrop.onclick = (e) => {
+            if (e.target === backdrop) backdrop.classList.remove("open");
+          };
+        });
+
+        // Appearance bindings
+        document.getElementById("themeSelect").onchange = (e) => {
+          state.prefs.theme = e.target.value;
+          saveState();
+          applyPrefs();
+        };
+        document.getElementById("toggleSnow").onchange = (e) => {
+          state.prefs.snow = e.target.checked;
+          saveState();
+          applyPrefs();
+        };
+        document.getElementById("toggleLights").onchange = (e) => {
+          state.prefs.lights = e.target.checked;
+          saveState();
+          applyPrefs();
+        };
+        document.getElementById("toggleGlow").onchange = (e) => {
+          state.prefs.glow = e.target.checked;
+          saveState();
+          applyPrefs();
+        };
+        document.getElementById("toggleBlur").onchange = (e) => {
+          state.prefs.blur = e.target.checked;
+          saveState();
+          applyPrefs();
+        };
+        document.getElementById("toggleCompact").onchange = (e) => {
+          state.prefs.compact = e.target.checked;
+          saveState();
+          applyPrefs();
+        };
+        document.getElementById("toggleHideRight").onchange = (e) => {
+          state.prefs.hideRight = e.target.checked;
+          saveState();
+          applyPrefs();
+        };
+
+        // Settings bindings
+        document.getElementById("saveAccountBtn").onclick = () => {
+          const name = (document.getElementById("accountNameInput").value || "").trim() || "Guest";
+          const handle = (document.getElementById("accountHandleInput").value || "").trim().replace(/^@+/, "").replace(/\s+/g, "") || "guest";
+          state.user.name = name;
+          state.user.username = handle;
+          state.user.isGuest = handle === "guest";
+          if (!state.user.isGuest && state.user.status === "Browsing") {
+            state.user.status = "Online";
+          }
+          saveState();
+          renderRightSidebar();
+          closeModal("settingsModal");
+          showToast("Saved profile @" + handle);
+        };
+
+        document.getElementById("signOutGuestBtn").onclick = () => {
+          state.user = { name: "Guest", username: "guest", status: "Browsing", isGuest: true };
+          saveState();
+          renderRightSidebar();
+          closeModal("settingsModal");
+          showToast("Switched to Guest.");
+        };
+
+        document.getElementById("syncIntervalSelect").onchange = (e) => {
+          state.prefs.syncInterval = Number(e.target.value);
+          saveState();
+          restartSyncTimer();
+        };
+
+        document.getElementById("enterToSendCheck").onchange = (e) => {
+          state.prefs.enterToSend = e.target.checked;
+          saveState();
+        };
+
+        document.getElementById("resetLocalDataBtn").onclick = () => {
+          localStorage.removeItem(STORAGE_KEY);
+          state = structuredClone(defaultState);
+          saveState();
+          applyPrefs();
+          renderLeftSidebar();
+          renderRightSidebar();
+          renderCenter();
+          closeModal("settingsModal");
+          showToast("Reset local cache.");
+        };
+      }
+
+      initLights();
+      initSnow();
+      bindEvents();
+      applyPrefs();
+      renderLeftSidebar();
+      renderRightSidebar();
+      renderCenter();
+      syncWithBackend("poll_sync");
+    })();
+  </script>
 </body>
 </html>
