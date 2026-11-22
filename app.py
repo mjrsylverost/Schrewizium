@@ -92,6 +92,8 @@ def public_user(user: dict[str, Any]) -> dict[str, Any]:
         "custom_status": user.get("custom_status", ""),
         "avatar": user.get("avatar", ""),
         "bio": user.get("bio", ""),
+        "banner_color": user.get("banner_color", "#2b2d31"),
+        "pronouns": user.get("pronouns", ""),
     }
 
 
@@ -123,13 +125,14 @@ def index() -> str:
 def auth():
     payload = request.get_json(silent=True) or {}
     username = clean_username(payload.get("username", ""))
+    mode = str(payload.get("mode", "register")).strip().lower()
     if not USERNAME_RE.match(username):
         return (
             jsonify(
                 {
                     "error": (
                         "Username must be 2-20 characters using letters, "
-                        "numbers, '_' or '.' with no spaces."
+                        "numbers, '_' or '.' with no spaces or special symbols."
                     )
                 }
             ),
@@ -140,17 +143,33 @@ def auth():
     with STATE_LOCK:
         state = load_state()
         if lower_key in state["username_map"]:
+            if mode == "register":
+                return (
+                    jsonify(
+                        {
+                            "error": (
+                                f"Username '{username}' is already taken. "
+                                "Choose another or switch to Log In."
+                            )
+                        }
+                    ),
+                    409,
+                )
             uid = state["username_map"][lower_key]
             user = state["users"][uid]
         else:
+            if mode == "login":
+                return jsonify({"error": f"No account found for '{username}'."}), 404
             uid = f"u_{uuid.uuid4().hex[:10]}"
             user = {
                 "id": uid,
                 "username": username,
                 "status": "online",
-                "custom_status": "",
+                "custom_status": str(payload.get("custom_status", "")).strip()[:60],
                 "avatar": str(payload.get("avatar", "")).strip()[:300],
                 "bio": str(payload.get("bio", "")).strip()[:200],
+                "banner_color": str(payload.get("banner_color", "#2b2d31")).strip()[:20],
+                "pronouns": str(payload.get("pronouns", "")).strip()[:30],
                 "friends": [],
                 "incoming": [],
                 "outgoing": [],
@@ -185,7 +204,7 @@ def update_profile():
         new_username = clean_username(payload.get("username", me["username"]))
         if new_username != me["username"]:
             if not USERNAME_RE.match(new_username):
-                return jsonify({"error": "Invalid username (no spaces allowed)."}), 400
+                return jsonify({"error": "Invalid username (no spaces or special symbols)."}), 400
             new_key = new_username.lower()
             existing_id = state["username_map"].get(new_key)
             if existing_id and existing_id != me["id"]:
@@ -201,6 +220,8 @@ def update_profile():
         me["custom_status"] = str(payload.get("custom_status", me.get("custom_status", "")))[:60]
         me["avatar"] = str(payload.get("avatar", me.get("avatar", "")))[:300]
         me["bio"] = str(payload.get("bio", me.get("bio", "")))[:200]
+        me["banner_color"] = str(payload.get("banner_color", me.get("banner_color", "#2b2d31")))[:20]
+        me["pronouns"] = str(payload.get("pronouns", me.get("pronouns", "")))[:30]
 
         save_state(state)
         return jsonify({"user": public_user(me)})

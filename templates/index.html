@@ -1,2367 +1,822 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SCHREWIZIUM — Holiday Parlour &amp; Community Hub</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <title>Schrewizium</title>
   <style>
-    :root {
-      --bg-deep: #040b16;
-      --bg-mid: #071426;
-      --bg-panel: rgba(9, 24, 45, 0.78);
-      --bg-panel-strong: rgba(11, 29, 54, 0.92);
-      --bg-card: rgba(13, 35, 65, 0.72);
-      --bg-card-hover: rgba(18, 48, 88, 0.88);
-      --bg-input: rgba(5, 16, 32, 0.85);
-      --border-glow: rgba(56, 189, 248, 0.34);
-      --border-subtle: rgba(125, 211, 252, 0.16);
-      --accent: #38bdf8;
-      --accent-2: #60a5fa;
-      --accent-soft: rgba(56, 189, 248, 0.16);
-      --accent-glow: 0 0 18px rgba(56, 189, 248, 0.28), inset 0 0 12px rgba(56, 189, 248, 0.08);
-      --text-main: #e6f2ff;
-      --text-muted: #93b4d4;
-      --text-dim: #6484a6;
-      --success: #34d399;
-      --warning: #fbbf24;
-      --danger: #f87171;
-      --holiday-gold: #fde68a;
-      --holiday-red: #fb7185;
-      --radius-lg: 14px;
-      --radius-md: 10px;
-      --radius-sm: 7px;
-      --glass-blur: 14px;
-      --space-scale: 1;
-      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
-      --font-display: 'Cinzel', Georgia, serif;
+    :root, [data-theme="dark"] {
+      --bg-rail: #141517;
+      --bg-sidebar: #1e1f22;
+      --bg-main: #26282c;
+      --bg-card: #1b1c20;
+      --bg-input: #141517;
+      --bg-hover: #2f3136;
+      --bg-active: #393c43;
+      --border: #32353b;
+      --text-main: #f2f3f5;
+      --text-muted: #949ba4;
+      --accent: #5865f2;
+      --accent-hover: #4752c4;
+      --danger: #f23f43;
+      --success: #23a55a;
+      --idle: #f0b232;
+      --dnd: #f23f43;
+      --offline: #80848e;
+      --mention-bg: rgba(88, 101, 242, 0.16);
+      --reply-bar: rgba(242, 243, 245, 0.06);
     }
-
-    body.theme-aurora {
-      --accent: #2dd4bf;
-      --accent-2: #38bdf8;
-      --accent-soft: rgba(45, 212, 191, 0.16);
-      --border-glow: rgba(45, 212, 191, 0.36);
-      --accent-glow: 0 0 18px rgba(45, 212, 191, 0.28), inset 0 0 12px rgba(45, 212, 191, 0.08);
+    [data-theme="light"] {
+      --bg-rail: #e3e5e8;
+      --bg-sidebar: #f2f3f5;
+      --bg-main: #ffffff;
+      --bg-card: #f7f8fa;
+      --bg-input: #ebedef;
+      --bg-hover: #e6e8eb;
+      --bg-active: #dcdfe4;
+      --border: #d4d7dc;
+      --text-main: #060607;
+      --text-muted: #4e5058;
+      --accent: #5865f2;
+      --accent-hover: #4752c4;
+      --danger: #da373c;
+      --success: #1a8f49;
+      --idle: #d99b1e;
+      --dnd: #da373c;
+      --offline: #747f8d;
+      --mention-bg: rgba(88, 101, 242, 0.14);
+      --reply-bar: rgba(6, 6, 7, 0.05);
     }
-
-    body.theme-ember {
-      --accent: #fb923c;
-      --accent-2: #f43f5e;
-      --accent-soft: rgba(251, 146, 60, 0.16);
-      --border-glow: rgba(251, 146, 60, 0.36);
-      --accent-glow: 0 0 18px rgba(251, 146, 60, 0.28), inset 0 0 12px rgba(251, 146, 60, 0.08);
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Inter, system-ui, sans-serif; }
+    html, body { width: 100vw; height: 100vh; overflow: hidden; background: var(--bg-main); color: var(--text-main); }
+    button { cursor: pointer; border: none; border-radius: 6px; font-weight: 600; transition: 0.15s; }
+    input, textarea, select {
+      background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border);
+      border-radius: 6px; padding: 9px 11px; font-size: 14px; outline: none;
     }
-
-    body.theme-violet {
-      --accent: #a78bfa;
-      --accent-2: #38bdf8;
-      --accent-soft: rgba(167, 139, 250, 0.18);
-      --border-glow: rgba(167, 139, 250, 0.38);
-      --accent-glow: 0 0 18px rgba(167, 139, 250, 0.28), inset 0 0 12px rgba(167, 139, 250, 0.08);
+    input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+    .app-shell { display: grid; grid-template-columns: 260px 1fr 260px; width: 100vw; height: 100vh; }
+    .sidebar { background: var(--bg-sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; height: 100vh; }
+    .brand-bar {
+      padding: 14px 16px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; font-weight: 800; letter-spacing: 0.6px;
     }
-
-    body.no-glow {
-      --accent-glow: none;
-      --border-glow: rgba(125, 211, 252, 0.2);
+    .theme-btn { background: var(--bg-hover); color: var(--text-main); padding: 5px 9px; font-size: 12px; }
+    .nav-scroll { flex: 1; overflow-y: auto; padding: 10px 8px; display: flex; flex-direction: column; gap: 4px; }
+    .nav-label {
+      font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;
+      padding: 10px 8px 4px; display: flex; justify-content: space-between; align-items: center;
     }
-
-    body.flat-glass {
-      --glass-blur: 0px;
-      --bg-panel: rgba(8, 22, 42, 0.96);
-      --bg-card: rgba(12, 31, 58, 0.96);
-    }
-
-    body.compact-ui {
-      --space-scale: 0.85;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    html, body {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: radial-gradient(circle at 20% 10%, #0d2748 0%, var(--bg-mid) 45%, var(--bg-deep) 100%);
-      color: var(--text-main);
-      font-family: var(--font-sans);
-      font-size: calc(14px * var(--space-scale));
-      line-height: 1.45;
-      user-select: none;
-    }
-
-    /* Snow Canvas & Holiday String Lights */
-    #snowCanvas {
-      position: fixed;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 2;
-    }
-
-    .holiday-banner-wrap {
-      position: relative;
-      z-index: 15;
-      background: linear-gradient(90deg, rgba(6, 18, 36, 0.95), rgba(14, 38, 70, 0.95), rgba(6, 18, 36, 0.95));
-      border-bottom: 1px solid var(--border-subtle);
-    }
-
-    .holiday-banner-top {
-      text-align: center;
-      font-family: var(--font-display);
-      font-size: 11px;
-      letter-spacing: 0.24em;
-      font-weight: 700;
-      color: var(--holiday-gold);
-      padding: 4px 12px 2px;
-      text-shadow: 0 0 10px rgba(253, 230, 138, 0.35);
-    }
-
-    .string-lights {
-      display: flex;
-      justify-content: space-around;
-      align-items: flex-start;
-      padding: 0 10px 4px;
-      position: relative;
-    }
-
-    .string-lights.hidden-lights {
-      display: none;
-    }
-
-    .string-lights::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: rgba(148, 163, 184, 0.35);
-    }
-
-    .bulb {
-      position: relative;
-      width: 9px;
-      height: 13px;
-      border-radius: 50% 50% 45% 45%;
-      margin-top: 2px;
-      animation: bulbPulse 2.4s infinite ease-in-out;
-    }
-
-    .bulb::before {
-      content: "";
-      position: absolute;
-      top: -3px;
-      left: 2px;
-      width: 5px;
-      height: 4px;
-      background: #334155;
-      border-radius: 1px;
-    }
-
-    .bulb:nth-child(4n+1) { background: #38bdf8; box-shadow: 0 0 10px #38bdf8; animation-delay: 0s; }
-    .bulb:nth-child(4n+2) { background: #fb7185; box-shadow: 0 0 10px #fb7185; animation-delay: 0.5s; }
-    .bulb:nth-child(4n+3) { background: #34d399; box-shadow: 0 0 10px #34d399; animation-delay: 1s; }
-    .bulb:nth-child(4n+4) { background: #fbbf24; box-shadow: 0 0 10px #fbbf24; animation-delay: 1.5s; }
-
-    @keyframes bulbPulse {
-      0%, 100% { opacity: 0.65; transform: scale(0.95); }
-      50% { opacity: 1; transform: scale(1.08); }
-    }
-
-    /* Top Header Bar */
-    .top-bar {
-      position: relative;
-      z-index: 14;
-      height: calc(50px * var(--space-scale));
-      padding: 0 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      background: rgba(6, 19, 38, 0.88);
-      backdrop-filter: blur(var(--glass-blur));
-      border-bottom: 1px solid var(--border-glow);
-    }
-
-    .brand-group {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .brand-title {
-      font-family: var(--font-display);
-      font-size: 16px;
-      font-weight: 800;
-      letter-spacing: 0.14em;
-      color: #f0f9ff;
-      text-shadow: 0 0 14px rgba(56, 189, 248, 0.45);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .live-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      padding: 3px 9px;
-      border-radius: 999px;
-      background: rgba(52, 211, 153, 0.12);
-      border: 1px solid rgba(52, 211, 153, 0.35);
-      color: var(--success);
-    }
-
-    .live-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--success);
-      box-shadow: 0 0 8px var(--success);
-    }
-
-    .top-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .icon-btn, .primary-btn, .ghost-btn, .danger-btn {
-      font-family: var(--font-sans);
-      font-size: 12.5px;
-      font-weight: 600;
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      transition: all 0.16s ease;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-
-    .icon-btn {
-      width: 32px;
-      height: 32px;
-      background: var(--accent-soft);
-      border: 1px solid var(--border-glow);
-      color: var(--accent);
-      box-shadow: var(--accent-glow);
-    }
-
-    .icon-btn:hover {
-      background: var(--accent);
-      color: #031122;
-    }
-
-    .primary-btn {
-      padding: 7px 13px;
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      color: #031122;
-      box-shadow: var(--accent-glow);
-    }
-
-    .primary-btn:hover {
-      filter: brightness(1.08);
-      transform: translateY(-1px);
-    }
-
-    .ghost-btn {
-      padding: 6px 11px;
-      background: rgba(15, 38, 70, 0.72);
-      border: 1px solid var(--border-subtle);
-      color: var(--text-main);
-    }
-
-    .ghost-btn:hover {
-      border-color: var(--border-glow);
-      background: var(--accent-soft);
-    }
-
-    .danger-btn {
-      padding: 5px 10px;
-      background: rgba(248, 113, 113, 0.14);
-      border: 1px solid rgba(248, 113, 113, 0.35);
-      color: var(--danger);
-    }
-
-    .danger-btn:hover {
-      background: rgba(248, 113, 113, 0.25);
-    }
-
-    /* Full Viewport App Shell */
-    .app-shell {
-      position: relative;
-      z-index: 10;
-      height: calc(100% - 76px);
-      width: 100%;
-      padding: calc(10px * var(--space-scale));
-      display: grid;
-      grid-template-columns: 248px minmax(0, 1fr) 292px;
-      gap: calc(12px * var(--space-scale));
-    }
-
-    .app-shell.hide-right {
-      grid-template-columns: 248px minmax(0, 1fr);
-    }
-
-    .glass-panel {
-      background: var(--bg-panel);
-      backdrop-filter: blur(var(--glass-blur));
-      border: 1px solid var(--border-glow);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--accent-glow);
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-      overflow: hidden;
-    }
-
-    /* Left Sidebar */
-    .left-sidebar {
-      padding: calc(12px * var(--space-scale)) calc(10px * var(--space-scale));
-      overflow-y: auto;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(56, 189, 248, 0.3) transparent;
-    }
-
-    .nav-section {
-      margin-bottom: calc(16px * var(--space-scale));
-    }
-
-    .nav-section-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-family: var(--font-mono);
-      font-size: 10.5px;
-      font-weight: 600;
-      letter-spacing: 0.11em;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      padding: 0 8px 6px;
-    }
-
-    .mini-add-btn {
-      width: 19px;
-      height: 19px;
-      border-radius: 5px;
-      border: 1px solid var(--border-subtle);
-      background: rgba(56, 189, 248, 0.12);
-      color: var(--accent);
-      font-size: 13px;
-      line-height: 1;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .mini-add-btn:hover {
-      background: var(--accent);
-      color: #031122;
-    }
-
     .nav-item {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      padding: calc(7px * var(--space-scale)) calc(10px * var(--space-scale));
-      margin-bottom: 3px;
-      border-radius: var(--radius-sm);
-      border: 1px solid transparent;
-      background: transparent;
-      color: var(--text-muted);
-      font-family: var(--font-sans);
-      font-size: 13px;
-      font-weight: 500;
-      text-align: left;
-      cursor: pointer;
-      transition: all 0.14s ease;
+      display: flex; align-items: center; justify-content: space-between; padding: 8px 10px;
+      border-radius: 6px; color: var(--text-muted); font-size: 14px; font-weight: 500;
     }
-
-    .nav-item:hover:not(.locked) {
-      background: rgba(56, 189, 248, 0.1);
-      color: var(--text-main);
+    .nav-item:hover { background: var(--bg-hover); color: var(--text-main); }
+    .nav-item.active { background: var(--bg-active); color: var(--text-main); font-weight: 600; }
+    .badge { background: var(--danger); color: #fff; font-size: 11px; padding: 1px 6px; border-radius: 99px; font-weight: 700; }
+    .user-dock {
+      background: var(--bg-rail); border-top: 1px solid var(--border); padding: 10px 12px;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
     }
-
-    .nav-item.active {
-      background: var(--accent-soft);
-      border-color: var(--border-glow);
-      color: #ffffff;
-      font-weight: 600;
-      box-shadow: inset 0 0 10px rgba(56, 189, 248, 0.14);
+    .avatar-wrap { position: relative; width: 36px; height: 36px; flex-shrink: 0; }
+    .avatar {
+      width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: #fff;
+      display: flex; align-items: center; justify-content: center; font-weight: 700; overflow: hidden; object-fit: cover; flex-shrink: 0;
     }
-
-    .nav-item.locked {
-      opacity: 0.65;
-      cursor: not-allowed;
+    .status-dot {
+      position: absolute; bottom: -1px; right: -1px; width: 11px; height: 11px; border-radius: 50%;
+      border: 2px solid var(--bg-rail); background: var(--success);
     }
-
-    .nav-item-left {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      min-width: 0;
+    .status-online { background: var(--success); }
+    .status-idle { background: var(--idle); }
+    .status-dnd { background: var(--dnd); }
+    .status-invisible, .status-offline { background: var(--offline); }
+    .main-area { display: flex; flex-direction: column; height: 100vh; background: var(--bg-main); min-width: 0; }
+    .top-header {
+      height: 52px; border-bottom: 1px solid var(--border); padding: 0 18px;
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
     }
-
-    .nav-item-label {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .badge-upcoming {
-      font-family: var(--font-mono);
-      font-size: 9.5px;
-      padding: 2px 6px;
-      border-radius: 999px;
-      background: rgba(148, 163, 184, 0.16);
-      color: var(--text-muted);
-      border: 1px solid rgba(148, 163, 184, 0.22);
-    }
-
-    .badge-public {
-      font-family: var(--font-mono);
-      font-size: 9.5px;
-      padding: 2px 6px;
-      border-radius: 5px;
-      background: rgba(56, 189, 248, 0.14);
-      color: var(--accent);
-      border: 1px solid rgba(56, 189, 248, 0.25);
-    }
-
-    .badge-count {
-      font-family: var(--font-mono);
-      font-size: 10.5px;
-      padding: 1px 6px;
-      border-radius: 999px;
-      background: rgba(56, 189, 248, 0.18);
-      color: var(--accent);
-    }
-
-    .status-dot-sm {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .status-online { background: var(--success); box-shadow: 0 0 6px var(--success); }
-    .status-idle { background: var(--warning); }
-    .status-dnd { background: var(--danger); }
-    .status-offline { background: #64748b; }
-
-    /* Center Main Workspace */
-    .center-stage {
-      padding: calc(16px * var(--space-scale)) calc(18px * var(--space-scale));
-      overflow-y: auto;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(56, 189, 248, 0.3) transparent;
-    }
-
-    .stage-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 14px;
-      margin-bottom: calc(14px * var(--space-scale));
-      flex-wrap: wrap;
-    }
-
-    .stage-title {
-      font-size: calc(22px * var(--space-scale));
-      font-weight: 700;
-      letter-spacing: -0.01em;
-      color: #f8fafc;
-    }
-
-    .stage-subtitle {
-      font-size: 12.5px;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
-
-    .stage-controls {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .select-control, .text-input, .textarea-input {
-      background: var(--bg-input);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-sm);
-      color: var(--text-main);
-      font-family: var(--font-sans);
-      font-size: 13px;
-      outline: none;
-      transition: border-color 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .select-control:focus, .text-input:focus, .textarea-input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.18);
-    }
-
-    .select-control {
-      padding: 7px 11px;
-      cursor: pointer;
-    }
-
-    .text-input {
-      padding: 8px 12px;
-      width: 100%;
-    }
-
-    .textarea-input {
-      padding: 9px 12px;
-      width: 100%;
-      resize: vertical;
-      min-height: 76px;
-    }
-
-    /* Category Pills & Search Bar */
-    .pills-row {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      flex-wrap: wrap;
-      margin-bottom: calc(10px * var(--space-scale));
-    }
-
-    .pill-btn {
-      padding: 5px 12px;
-      border-radius: 999px;
-      border: 1px solid var(--border-subtle);
-      background: rgba(12, 31, 58, 0.72);
-      color: var(--text-muted);
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.14s ease;
-    }
-
-    .pill-btn:hover {
-      color: var(--text-main);
-      border-color: var(--border-glow);
-    }
-
-    .pill-btn.active {
-      background: var(--accent-soft);
-      border-color: var(--accent);
-      color: #ffffff;
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.22);
-    }
-
-    .search-bar-wrap {
-      margin-bottom: calc(14px * var(--space-scale));
-    }
-
-    .search-input {
-      width: 100%;
-      padding: 9px 13px;
-      border-radius: var(--radius-md);
-      background: rgba(5, 16, 33, 0.85);
-      border: 1px solid var(--border-subtle);
-      color: var(--text-main);
-      font-size: 13px;
-      outline: none;
-    }
-
-    .search-input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
-    }
-
-    /* Cards & Posts */
-    .card-box {
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-md);
-      padding: calc(14px * var(--space-scale));
-      margin-bottom: calc(12px * var(--space-scale));
-      transition: border-color 0.15s ease, background 0.15s ease;
-    }
-
-    .card-box:hover {
-      border-color: var(--border-glow);
-      background: var(--bg-card-hover);
-    }
-
-    .card-box.pinned {
-      border-color: rgba(251, 191, 36, 0.45);
-      box-shadow: inset 0 0 14px rgba(251, 191, 36, 0.06);
-    }
-
-    .post-meta-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 6px;
-      flex-wrap: wrap;
-    }
-
-    .post-author-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    .tag-chip {
-      font-family: var(--font-mono);
-      font-size: 10.5px;
-      padding: 2px 7px;
-      border-radius: 5px;
-      background: var(--accent-soft);
-      color: var(--accent);
-      border: 1px solid rgba(56, 189, 248, 0.25);
-    }
-
-    .post-title {
-      font-size: 15.5px;
-      font-weight: 700;
-      color: #f8fafc;
-      margin-bottom: 5px;
-    }
-
-    .post-body {
-      font-size: 13.5px;
-      color: var(--text-main);
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .post-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 10px;
-      padding-top: 8px;
-      border-top: 1px solid rgba(125, 211, 252, 0.1);
-      flex-wrap: wrap;
-    }
-
-    .replies-box {
-      margin-top: 10px;
-      padding-left: 12px;
-      border-left: 2px solid rgba(56, 189, 248, 0.28);
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .reply-item {
-      background: rgba(5, 16, 33, 0.58);
-      border-radius: var(--radius-sm);
-      padding: 7px 10px;
-      font-size: 12.5px;
-    }
-
-    /* Chat & DM Layout */
-    .chat-layout {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      min-height: 0;
-    }
-
-    .pins-bar {
-      background: rgba(251, 191, 36, 0.08);
-      border: 1px solid rgba(251, 191, 36, 0.28);
-      border-radius: var(--radius-sm);
-      padding: 7px 11px;
-      margin-bottom: 10px;
-      font-size: 12px;
-      color: var(--holiday-gold);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-    }
-
-    .messages-stream {
-      flex: 1;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      padding-right: 4px;
-      margin-bottom: 8px;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(56, 189, 248, 0.3) transparent;
-    }
-
+    .content-scroll { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 6px; }
+    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+    .row { display: flex; gap: 8px; align-items: center; }
+    .btn-primary { background: var(--accent); color: #fff; padding: 9px 14px; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-danger { background: var(--danger); color: #fff; padding: 7px 11px; font-size: 12px; }
+    .btn-ghost { background: var(--bg-hover); color: var(--text-main); padding: 7px 11px; font-size: 12px; }
+    .err-text { color: var(--danger); font-size: 13px; font-weight: 600; margin-top: 6px; }
+    .ok-text { color: var(--success); font-size: 13px; font-weight: 600; margin-top: 6px; }
     .msg-row {
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-md);
-      padding: 9px 12px;
+      position: relative; display: flex; gap: 10px; padding: 6px 10px; border-radius: 6px;
     }
-
-    .msg-row.pinned {
-      border-color: rgba(251, 191, 36, 0.45);
+    .msg-row:hover { background: var(--bg-hover); }
+    .msg-row.mentioned { background: var(--mention-bg); border-left: 3px solid var(--accent); }
+    .msg-actions {
+      position: absolute; top: -10px; right: 10px; display: none; gap: 4px;
+      background: var(--bg-sidebar); border: 1px solid var(--border); border-radius: 6px; padding: 2px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
-
-    .msg-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 3px;
+    .msg-row:hover .msg-actions { display: flex; }
+    .msg-act-btn {
+      background: transparent; color: var(--text-muted); padding: 4px 7px; font-size: 11px; border-radius: 4px;
     }
-
-    .msg-user {
-      font-weight: 700;
-      font-size: 12.5px;
-      color: var(--accent);
-      font-family: var(--font-mono);
+    .msg-act-btn:hover { background: var(--bg-hover); color: var(--text-main); }
+    .msg-act-btn.del:hover { color: var(--danger); }
+    .reply-quote {
+      display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted);
+      background: var(--reply-bar); border-left: 2px solid var(--accent); padding: 3px 8px;
+      border-radius: 4px; margin-bottom: 4px; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
     }
-
-    .msg-time {
-      font-family: var(--font-mono);
-      font-size: 10.5px;
-      color: var(--text-dim);
+    .msg-body { flex: 1; min-width: 0; }
+    .msg-meta { display: flex; align-items: baseline; gap: 8px; font-size: 13px; }
+    .msg-author { font-weight: 700; cursor: pointer; }
+    .msg-author:hover { text-decoration: underline; }
+    .msg-time { font-size: 11px; color: var(--text-muted); }
+    .msg-edited { font-size: 11px; color: var(--text-muted); font-style: italic; }
+    .msg-text { font-size: 14px; margin-top: 3px; word-break: break-word; white-space: pre-wrap; line-height: 1.4; }
+    .mention-pill {
+      background: rgba(88, 101, 242, 0.25); color: #c9d0ff; padding: 0 4px; border-radius: 3px; font-weight: 600;
     }
-
-    .typing-bar {
-      min-height: 20px;
-      font-size: 12px;
-      font-style: italic;
-      color: var(--accent);
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+    [data-theme="light"] .mention-pill { color: #3c47c4; }
+    .composer-wrap { border-top: 1px solid var(--border); padding: 10px 16px 12px; flex-shrink: 0; }
+    .composer-banner {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--bg-sidebar); border: 1px solid var(--border); border-bottom: none;
+      border-radius: 8px 8px 0 0; padding: 6px 12px; font-size: 12px; color: var(--text-muted);
     }
-
-    .chat-compose {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    /* Right Sidebar */
-    .right-sidebar {
-      padding: calc(14px * var(--space-scale));
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: calc(12px * var(--space-scale));
-      scrollbar-width: thin;
-      scrollbar-color: rgba(56, 189, 248, 0.3) transparent;
-    }
-
-    .profile-card {
-      background: linear-gradient(160deg, rgba(16, 44, 82, 0.88), rgba(7, 20, 40, 0.92));
-      border: 1px solid var(--border-glow);
-      border-radius: var(--radius-md);
-      padding: 14px;
-    }
-
-    .profile-top {
-      display: flex;
-      align-items: center;
-      gap: 11px;
-      margin-bottom: 10px;
-    }
-
-    .avatar-circle {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), #1d4ed8);
-      color: #ffffff;
-      font-weight: 700;
-      font-size: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 2px solid rgba(255, 255, 255, 0.25);
-      flex-shrink: 0;
-    }
-
-    .profile-name {
-      font-weight: 700;
-      font-size: 14.5px;
-      color: #ffffff;
-    }
-
-    .profile-handle {
-      font-family: var(--font-mono);
-      font-size: 11.5px;
-      color: var(--text-muted);
-    }
-
-    .parlour-card {
-      background: rgba(10, 27, 52, 0.82);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-md);
-      padding: 13px;
-    }
-
-    .parlour-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--holiday-gold);
-      margin-bottom: 5px;
-    }
-
-    .parlour-quote {
-      font-size: 12px;
-      font-style: italic;
-      color: var(--text-muted);
-    }
-
-    .member-chip {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 6px 8px;
-      border-radius: var(--radius-sm);
-      background: rgba(7, 20, 40, 0.65);
-      border: 1px solid rgba(125, 211, 252, 0.1);
-      font-size: 12.5px;
-      margin-bottom: 5px;
-    }
-
-    /* Poll Bar */
-    .poll-option-row {
-      margin-top: 8px;
-    }
-
-    .poll-bar-btn {
-      width: 100%;
-      position: relative;
-      overflow: hidden;
-      text-align: left;
-      padding: 8px 12px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border-subtle);
-      background: rgba(6, 18, 36, 0.85);
-      color: var(--text-main);
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 13px;
-    }
-
-    .poll-bar-btn:hover {
-      border-color: var(--accent);
-    }
-
-    .poll-fill {
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      background: rgba(56, 189, 248, 0.2);
-      pointer-events: none;
-      transition: width 0.25s ease;
-    }
-
-    /* Modal / Drawer Overlay for Settings, Appearance, Composer */
+    .chat-composer { display: flex; gap: 8px; }
+    .typing-bar { font-size: 12px; color: var(--text-muted); padding: 0 18px 6px; min-height: 20px; }
+    .right-panel { background: var(--bg-sidebar); border-left: 1px solid var(--border); height: 100vh; overflow-y: auto; padding: 14px; }
     .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(2, 8, 18, 0.76);
-      backdrop-filter: blur(6px);
-      z-index: 40;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
+      position: fixed; inset: 0; background: rgba(0,0,0,0.72); display: flex;
+      align-items: center; justify-content: center; z-index: 50;
     }
-
-    .modal-backdrop.open {
-      display: flex;
-    }
-
     .modal-card {
-      width: 100%;
-      max-width: 560px;
-      max-height: 86vh;
-      overflow-y: auto;
-      background: var(--bg-panel-strong);
-      border: 1px solid var(--border-glow);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--accent-glow);
-      padding: 18px;
+      width: 440px; max-width: 94vw; background: var(--bg-sidebar); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden; box-shadow: 0 16px 40px rgba(0,0,0,0.45);
     }
-
-    .modal-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 14px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid var(--border-subtle);
-    }
-
-    .setting-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 10px 0;
-      border-bottom: 1px solid rgba(125, 211, 252, 0.08);
-    }
-
-    .setting-label {
-      font-weight: 600;
-      font-size: 13px;
-    }
-
-    .setting-desc {
-      font-size: 11.5px;
-      color: var(--text-muted);
-    }
-
-    .toast-banner {
-      position: fixed;
-      bottom: 16px;
-      right: 16px;
-      z-index: 60;
-      background: rgba(8, 25, 48, 0.95);
-      border: 1px solid var(--accent);
-      color: #f0f9ff;
-      padding: 9px 14px;
-      border-radius: var(--radius-md);
-      font-size: 12.5px;
-      box-shadow: var(--accent-glow);
-      opacity: 0;
-      transform: translateY(8px);
-      transition: all 0.2s ease;
-      pointer-events: none;
-    }
-
-    .toast-banner.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .empty-state {
-      color: var(--text-muted);
-      font-size: 13px;
-      padding: 14px 2px;
-    }
-
-    @media (max-width: 980px) {
-      .app-shell, .app-shell.hide-right {
-        grid-template-columns: 205px minmax(0, 1fr);
-      }
-      .right-sidebar {
-        display: none;
-      }
-    }
-
-    @media (max-width: 700px) {
-      html, body {
-        overflow: auto;
-      }
-      .app-shell, .app-shell.hide-right {
-        height: auto;
-        grid-template-columns: 1fr;
-      }
-      .right-sidebar {
-        display: flex;
-      }
+    .profile-banner { height: 78px; background: #2b2d31; }
+    .hidden { display: none !important; }
+    @media (max-width: 900px) {
+      .app-shell { grid-template-columns: 220px 1fr; }
+      .right-panel { display: none; }
     }
   </style>
 </head>
 <body>
-  <canvas id="snowCanvas"></canvas>
-
-  <div class="holiday-banner-wrap">
-    <div class="holiday-banner-top">MERRY CHRISTMAS</div>
-    <div class="string-lights" id="stringLights"></div>
+  <!-- AUTH OVERLAY -->
+  <div id="authModal" class="modal-backdrop">
+    <div class="modal-card" style="padding: 22px;">
+      <h2 style="margin-bottom: 4px;">Welcome to Schrewizium</h2>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
+        Usernames are unique and synced live across all rooms.
+      </p>
+      <div class="row" style="margin-bottom: 12px;">
+        <button id="tabRegister" class="btn-primary" style="flex:1;" onclick="setAuthMode('register')">Create Username</button>
+        <button id="tabLogin" class="btn-ghost" style="flex:1;" onclick="setAuthMode('login')">Log In</button>
+      </div>
+      <label style="font-size:12px; font-weight:700; color:var(--text-muted);">USERNAME</label>
+      <input id="authUsername" style="width:100%; margin-top:4px;" placeholder="e.g. Mahtaab" oninput="validateUsernameLive(this.value, 'authError')" />
+      <div id="authError" class="err-text"></div>
+      <button class="btn-primary" style="width:100%; margin-top:14px;" onclick="submitAuth()">Continue</button>
+    </div>
   </div>
 
-  <header class="top-bar">
-    <div class="brand-group">
-      <div class="brand-title">
-        <span>SCHREWIZIUM</span>
-      </div>
-      <div class="live-pill" id="syncStatusPill">
-        <span class="live-dot"></span>
-        <span id="syncStatusText">Synced</span>
-      </div>
-    </div>
-
-    <div class="top-actions">
-      <button class="ghost-btn" id="openAppearanceBtn" title="Appearance">Appearance</button>
-      <button class="ghost-btn" id="openSettingsBtn" title="Settings">Settings</button>
-      <button class="icon-btn" id="quickComposeBtn" title="New Post / Action">+</button>
-    </div>
-  </header>
-
-  <main class="app-shell" id="appShell">
-    <!-- LEFT SIDEBAR -->
-    <aside class="glass-panel left-sidebar">
-      <div class="nav-section">
-        <div class="nav-section-header">
-          <span>SPACES</span>
+  <!-- PROFILE & SETTINGS MODAL -->
+  <div id="profileModal" class="modal-backdrop hidden" onclick="if(event.target===this) closeProfileModal()">
+    <div class="modal-card">
+      <div id="profileBannerPreview" class="profile-banner"></div>
+      <div style="padding: 16px;">
+        <div class="row" style="justify-content: space-between; margin-bottom: 12px;">
+          <h3>Discord-Style Profile</h3>
+          <button class="btn-ghost" onclick="closeProfileModal()">✕</button>
         </div>
-        <button class="nav-item active" data-view="bulletins" data-board="International (Main)">
-          <span class="nav-item-left"><span class="nav-item-label">Bulletins</span></span>
-        </button>
-        <button class="nav-item" data-view="friends">
-          <span class="nav-item-left"><span class="nav-item-label">Friends</span></span>
-          <span class="badge-count" id="navFriendsCount">0</span>
-        </button>
-        <button class="nav-item" data-view="polls">
-          <span class="nav-item-left"><span class="nav-item-label">Polls</span></span>
-          <span class="badge-count" id="navPollsCount">0</span>
-        </button>
-        <button class="nav-item" data-view="group_chat" data-target="general-lounge">
-          <span class="nav-item-left"><span class="nav-item-label">Group Chats</span></span>
-        </button>
-        <button class="nav-item" data-view="dm">
-          <span class="nav-item-left"><span class="nav-item-label">DMs</span></span>
-        </button>
-      </div>
-
-      <div class="nav-section">
-        <div class="nav-section-header">
-          <span>BULLETIN BOARDS</span>
-        </div>
-        <button class="nav-item board-btn active" data-view="bulletins" data-board="International (Main)">
-          <span class="nav-item-left"><span class="nav-item-label">International (Main)</span></span>
-        </button>
-        <button class="nav-item board-btn" data-view="bulletins" data-board="Anime">
-          <span class="nav-item-left"><span class="nav-item-label">Anime</span></span>
-        </button>
-        <button class="nav-item board-btn" data-view="bulletins" data-board="Gaming">
-          <span class="nav-item-left"><span class="nav-item-label">Gaming</span></span>
-        </button>
-        <button class="nav-item board-btn" data-view="bulletins" data-board="Music">
-          <span class="nav-item-left"><span class="nav-item-label">Music</span></span>
-        </button>
-        <button class="nav-item board-btn" data-view="bulletins" data-board="Tech">
-          <span class="nav-item-left"><span class="nav-item-label">Tech</span></span>
-        </button>
-        <button class="nav-item board-btn" data-view="bulletins" data-board="Creative Writing">
-          <span class="nav-item-left"><span class="nav-item-label">Creative Writing</span></span>
-        </button>
-      </div>
-
-      <div class="nav-section">
-        <div class="nav-section-header">
-          <span>LOCKED</span>
-        </div>
-        <button class="nav-item locked" type="button" data-locked="Minigames">
-          <span class="nav-item-left"><span class="nav-item-label">Minigames</span></span>
-          <span class="badge-upcoming">upcoming</span>
-        </button>
-        <button class="nav-item locked" type="button" data-locked="Arcade">
-          <span class="nav-item-left"><span class="nav-item-label">Arcade</span></span>
-          <span class="badge-upcoming">upcoming</span>
-        </button>
-        <button class="nav-item locked" type="button" data-locked="ESF Bank">
-          <span class="nav-item-left"><span class="nav-item-label">ESF Bank</span></span>
-          <span class="badge-upcoming">upcoming</span>
-        </button>
-        <button class="nav-item locked" type="button" data-locked="Community Hub">
-          <span class="nav-item-left"><span class="nav-item-label">Community Hub</span></span>
-          <span class="badge-upcoming">upcoming</span>
-        </button>
-      </div>
-
-      <div class="nav-section">
-        <div class="nav-section-header">
-          <span>GROUPS</span>
-          <button class="mini-add-btn" id="createGroupBtn" title="New Group Chat">+</button>
-        </div>
-        <div id="sidebarGroupsList"></div>
-      </div>
-
-      <div class="nav-section">
-        <div class="nav-section-header">
-          <span>DIRECT MESSAGES</span>
-        </div>
-        <div id="sidebarDmsList"></div>
-      </div>
-    </aside>
-
-    <!-- CENTER STAGE -->
-    <section class="glass-panel center-stage" id="centerStage"></section>
-
-    <!-- RIGHT SIDEBAR -->
-    <aside class="glass-panel right-sidebar" id="rightSidebar">
-      <div class="profile-card">
-        <div class="profile-top">
-          <div class="avatar-circle" id="profileAvatar">G</div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
           <div>
-            <div class="profile-name" id="profileDisplayName">Guest</div>
-            <div class="profile-handle" id="profileHandle">@guest</div>
+            <label style="font-size:11px; font-weight:700; color:var(--text-muted);">USERNAME (UNIQUE)</label>
+            <input id="profUsername" style="width:100%; margin-top:3px;" oninput="validateUsernameLive(this.value, 'profError')" />
+            <div id="profError" class="err-text"></div>
+          </div>
+          <div class="row">
+            <div style="flex:1;">
+              <label style="font-size:11px; font-weight:700; color:var(--text-muted);">PRESENCE</label>
+              <select id="profStatus" style="width:100%; margin-top:3px;">
+                <option value="online">Online</option>
+                <option value="idle">Idle</option>
+                <option value="dnd">Do Not Disturb</option>
+                <option value="invisible">Invisible</option>
+              </select>
+            </div>
+            <div style="width:110px;">
+              <label style="font-size:11px; font-weight:700; color:var(--text-muted);">BANNER</label>
+              <input id="profBanner" type="color" value="#2b2d31" style="width:100%; height:38px; padding:2px; margin-top:3px;"
+                oninput="document.getElementById('profileBannerPreview').style.background=this.value" />
+            </div>
+          </div>
+          <div>
+            <label style="font-size:11px; font-weight:700; color:var(--text-muted);">CUSTOM STATUS</label>
+            <input id="profCustomStatus" style="width:100%; margin-top:3px;" placeholder="What are you up to?" maxlength="60" />
+          </div>
+          <div>
+            <label style="font-size:11px; font-weight:700; color:var(--text-muted);">PRONOUNS</label>
+            <input id="profPronouns" style="width:100%; margin-top:3px;" placeholder="he/him, she/her, they/them..." maxlength="30" />
+          </div>
+          <div>
+            <label style="font-size:11px; font-weight:700; color:var(--text-muted);">AVATAR IMAGE URL</label>
+            <input id="profAvatar" style="width:100%; margin-top:3px;" placeholder="https://..." />
+          </div>
+          <div>
+            <label style="font-size:11px; font-weight:700; color:var(--text-muted);">ABOUT ME</label>
+            <textarea id="profBio" rows="3" style="width:100%; margin-top:3px;" placeholder="Write a short bio..." maxlength="200"></textarea>
+          </div>
+          <div id="profSaved" class="ok-text"></div>
+          <div class="row" style="justify-content: space-between; margin-top: 4px;">
+            <button class="btn-danger" onclick="logoutUser()">Log Out</button>
+            <button class="btn-primary" onclick="saveProfile()">Save Profile</button>
           </div>
         </div>
-        <div style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">
-          Status: <strong style="color:var(--text-main);" id="profileStatusLabel">Browsing</strong>
-        </div>
-        <div style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">
-          Sign in via <code>+</code> or Settings — Account to add friends and post forums.
-        </div>
-        <div style="display:flex; gap:6px;">
-          <select class="select-control" id="quickStatusSelect" style="flex:1; padding:5px 8px; font-size:12px;">
-            <option value="Browsing">Browsing</option>
-            <option value="Online">Online</option>
-            <option value="Idle by the Hearth">Idle by the Hearth</option>
-            <option value="Writing">Writing</option>
-            <option value="Do Not Disturb">Do Not Disturb</option>
-          </select>
-          <button class="ghost-btn" id="quickAccountBtn" style="padding:5px 9px; font-size:11.5px;">Account</button>
-        </div>
       </div>
+    </div>
+  </div>
 
-      <div class="parlour-card">
-        <div class="parlour-title">Holiday Parlour</div>
-        <div class="parlour-quote">"Merry Christmas — warm hearth, falling snow, and open forums."</div>
+  <!-- FULLSCREEN APP -->
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand-bar">
+        <span>SCHREWIZIUM</span>
+        <button id="themeToggle" class="theme-btn" onclick="toggleTheme()">Light Mode</button>
       </div>
-
-      <div class="parlour-card">
-        <div class="nav-section-header" style="padding:0 0 6px;">
-          <span>ACTIVE MEMBERS</span>
-          <span class="badge-count" id="activeMembersCount">0</span>
+      <div class="nav-scroll">
+        <div id="navFriends" class="nav-item active" onclick="switchView('friends','friends')">
+          <span>Friends</span>
+          <span id="reqBadge" class="badge hidden">0</span>
         </div>
-        <div id="rightMembersList"></div>
+        <div id="navBulletin" class="nav-item" onclick="switchView('bulletin','bulletin')"><span>Bulletin Board</span></div>
+        <div id="navPolls" class="nav-item" onclick="switchView('polls','polls')"><span>Polls</span></div>
+
+        <div class="nav-label">
+          <span>Group Chats</span>
+          <button class="btn-ghost" style="padding:2px 7px;" onclick="promptCreateGC()">+</button>
+        </div>
+        <div id="gcList"></div>
+
+        <div class="nav-label"><span>Direct Messages</span></div>
+        <div id="dmList"></div>
+      </div>
+      <div class="user-dock">
+        <div class="row" style="min-width:0; cursor:pointer;" onclick="openProfileModal()">
+          <div class="avatar-wrap">
+            <div id="dockAvatar" class="avatar">?</div>
+            <div id="dockStatusDot" class="status-dot status-online"></div>
+          </div>
+          <div style="min-width:0;">
+            <div id="dockUsername" style="font-size:13px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">@guest</div>
+            <div id="dockCustomStatus" style="font-size:11px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">online</div>
+          </div>
+        </div>
+        <button class="btn-ghost" onclick="openProfileModal()">Profile</button>
       </div>
     </aside>
-  </main>
 
-  <!-- APPEARANCE MODAL -->
-  <div class="modal-backdrop" id="appearanceModal">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 style="font-size:16px;">Appearance</h3>
-        <button class="ghost-btn" data-close="appearanceModal">Close</button>
-      </div>
+    <main class="main-area">
+      <header class="top-header">
+        <strong id="headerTitle">Friends</strong>
+        <span id="headerSub" style="font-size:12px; color:var(--text-muted);">Live Server Sync</span>
+      </header>
 
-      <div class="setting-row">
-        <div>
-          <div class="setting-label">Accent Theme</div>
-          <div class="setting-desc">Switch glowing accents across panels and pills</div>
+      <div id="centerScroll" class="content-scroll"></div>
+
+      <div id="typingBar" class="typing-bar hidden"></div>
+      <div id="composerWrap" class="composer-wrap hidden">
+        <div id="replyBar" class="composer-banner hidden">
+          <span id="replyLabel">Replying to @user</span>
+          <button class="msg-act-btn" onclick="cancelReply()">✕</button>
         </div>
-        <select class="select-control" id="themeSelect">
-          <option value="holiday-cyan">Holiday Cyan (Default)</option>
-          <option value="aurora">Northern Aurora</option>
-          <option value="ember">Hearth Ember</option>
-          <option value="violet">Midnight Violet</option>
-        </select>
-      </div>
-
-      <div class="setting-row">
-        <div>
-          <div class="setting-label">Falling Snow</div>
-          <div class="setting-desc">Toggle animated snow particles across the viewport</div>
+        <div id="editBar" class="composer-banner hidden">
+          <span>Editing message</span>
+          <button class="msg-act-btn" onclick="cancelEdit()">Cancel</button>
         </div>
-        <input type="checkbox" id="toggleSnow" checked />
-      </div>
-
-      <div class="setting-row">
-        <div>
-          <div class="setting-label">Holiday String Lights</div>
-          <div class="setting-desc">Show or hide top glowing bulbs</div>
-        </div>
-        <input type="checkbox" id="toggleLights" checked />
-      </div>
-
-      <div class="setting-row">
-        <div>
-          <div class="setting-label">Neon Glow &amp; Blur</div>
-          <div class="setting-desc">Toggle outer cyan glow and frosted glass blur</div>
-        </div>
-        <div style="display:flex; gap:10px;">
-          <label style="font-size:12px;"><input type="checkbox" id="toggleGlow" checked /> Glow</label>
-          <label style="font-size:12px;"><input type="checkbox" id="toggleBlur" checked /> Glass Blur</label>
+        <div class="chat-composer">
+          <input id="chatInput" style="flex:1;" placeholder="Send a message... (use @username to mention)" onkeydown="handleComposerKey(event)" oninput="notifyTyping()" />
+          <button id="composerSubmitBtn" class="btn-primary" onclick="submitChatAction()">Send</button>
         </div>
       </div>
+    </main>
 
-      <div class="setting-row">
-        <div>
-          <div class="setting-label">Compact Density &amp; Right Rail</div>
-          <div class="setting-desc">Tighten spacing or hide the right profile column</div>
-        </div>
-        <div style="display:flex; gap:10px;">
-          <label style="font-size:12px;"><input type="checkbox" id="toggleCompact" /> Compact</label>
-          <label style="font-size:12px;"><input type="checkbox" id="toggleHideRight" /> Hide Right</label>
-        </div>
+    <aside class="right-panel">
+      <div style="font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:10px;">
+        Members & Directory
       </div>
-    </div>
+      <div id="rightMemberList" style="display:flex; flex-direction:column; gap:8px;"></div>
+    </aside>
   </div>
-
-  <!-- SETTINGS & ACCOUNT MODAL -->
-  <div class="modal-backdrop" id="settingsModal">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 style="font-size:16px;">Settings &amp; Account</h3>
-        <button class="ghost-btn" data-close="settingsModal">Close</button>
-      </div>
-
-      <div class="setting-row" style="flex-direction:column; align-items:stretch;">
-        <div class="setting-label" style="margin-bottom:6px;">Account Profile</div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-          <input type="text" class="text-input" id="accountNameInput" placeholder="Display Name (e.g. sylverost)" />
-          <input type="text" class="text-input" id="accountHandleInput" placeholder="Username (e.g. sylverost)" />
-        </div>
-        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
-          <button class="ghost-btn" id="signOutGuestBtn">Switch to Guest</button>
-          <button class="primary-btn" id="saveAccountBtn">Save Account</button>
-        </div>
-      </div>
-
-      <div class="setting-row">
-        <div>
-          <div class="setting-label">Live Sync Interval</div>
-          <div class="setting-desc">Poll backend / sync state for messages, typing, and members</div>
-        </div>
-        <select class="select-control" id="syncIntervalSelect">
-          <option value="2000">2s (Fast)</option>
-          <option value="4000" selected>4s (Balanced)</option>
-          <option value="8000">8s (Light)</option>
-          <option value="0">Paused</option>
-        </select>
-      </div>
-
-      <div class="setting-row">
-        <div>
-          <div class="setting-label">Enter Key Sends Chat</div>
-          <div class="setting-desc">Use Shift+Enter for new lines in chat &amp; DMs</div>
-        </div>
-        <input type="checkbox" id="enterToSendCheck" checked />
-      </div>
-
-      <div class="setting-row" style="border-bottom:none;">
-        <div>
-          <div class="setting-label">Reset Local Cache</div>
-          <div class="setting-desc">Clear local preferences and cached sample state</div>
-        </div>
-        <button class="danger-btn" id="resetLocalDataBtn">Reset Local</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- COMPOSER MODAL -->
-  <div class="modal-backdrop" id="composerModal">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 style="font-size:16px;" id="composerTitle">Create New Forum / Bulletin</h3>
-        <button class="ghost-btn" data-close="composerModal">Close</button>
-      </div>
-      <div id="composerBody"></div>
-    </div>
-  </div>
-
-  <div class="toast-banner" id="toastBanner"></div>
 
   <script>
-    (function () {
-      const STORAGE_KEY = "schrewizium_unified_state_v1";
-      const CATEGORIES = ["International", "Anime", "Gaming", "Music", "Tech", "Creative Writing"];
-      const BOARDS = ["International (Main)", "Anime", "Gaming", "Music", "Tech", "Creative Writing"];
+    let authMode = "register";
+    let currentKind = "friends";
+    let currentTarget = "friends";
+    let appState = null;
+    let lastTypingSent = 0;
+    let replyingTo = null; // { id, author_username, text }
+    let editingMsg = null;  // { id, text }
 
-      const defaultState = {
-        user: {
-          name: "Guest",
-          username: "guest",
-          status: "Browsing",
-          isGuest: true
-        },
-        prefs: {
-          theme: "holiday-cyan",
-          snow: true,
-          lights: true,
-          glow: true,
-          blur: true,
-          compact: false,
-          hideRight: false,
-          syncInterval: 4000,
-          enterToSend: true
-        },
-        view: "bulletins",
-        activeBoard: "International (Main)",
-        activeCategory: "International",
-        searchQuery: "",
-        sortOrder: "newest",
-        activeGroupId: "general-lounge",
-        activeDmUser: "hearth-bot",
-        bulletins: [
-          {
-            id: "b-101",
-            board: "International (Main)",
-            category: "International",
-            title: "Welcome to the Schrewizium Holiday Parlour",
-            body: "Open forums, replies, edit & delete, polls, friends, group chats, and live typing indicators are all united here.",
-            author: "sylverost",
-            createdAt: Date.now() - 3600000,
-            pinned: true,
-            replies: [
-              { id: "r-1", author: "guest", text: "Snow and cyan borders look super clean.", createdAt: Date.now() - 1800000 }
-            ]
-          }
-        ],
-        polls: [
-          {
-            id: "p-1",
-            question: "Which space should get the next major expansion?",
-            author: "sylverost",
-            options: [
-              { id: "o-1", label: "Creative Writing & Lore Archive", votes: 3 },
-              { id: "o-2", label: "Co-op Minigames & Arcade", votes: 5 },
-              { id: "o-3", label: "Custom Profile Badges", votes: 2 }
-            ],
-            userVotedOptionId: null
-          }
-        ],
-        friends: [],
-        pendingFriendRequests: [],
-        groups: [
-          { id: "general-lounge", name: "general-lounge", isPublic: true },
-          { id: "hearth-general", name: "hearth-general", isPublic: true }
-        ],
-        groupMessages: {
-          "general-lounge": [
-            { id: "gm-1", author: "sylverost", text: "Welcome to #general-lounge — type below to chat live.", time: "12:00", pinned: true }
-          ],
-          "hearth-general": [
-            { id: "gm-2", author: "sylverost", text: "Warm hearth channel is open.", time: "12:05", pinned: false }
-          ]
-        },
-        dmMessages: {
-          "hearth-bot": [
-            { id: "dm-1", author: "hearth-bot", text: "Direct messages are ready. Add a friend to start 1-on-1 chats.", time: "12:01", pinned: false }
-          ]
-        },
-        pins: {
-          "general-lounge": "Welcome to #general-lounge — type below to chat live."
-        },
-        members: [
-          { username: "sylverost", status: "online" },
-          { username: "hearth-bot", status: "online" }
-        ],
-        typingUsers: []
-      };
+    function esc(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
 
-      let state = loadState();
-      let syncTimer = null;
-      let typingTimeout = null;
+    function formatMsgText(raw) {
+      return esc(raw).replace(
+        /(^|\s)(@[a-zA-Z0-9_.]{2,20})/g,
+        (_, prefix, tag) => `${prefix}<span class="mention-pill">${tag}</span>`
+      );
+    }
 
-      function loadState() {
-        try {
-          const raw = localStorage.getItem(STORAGE_KEY);
-          if (!raw) return structuredClone(defaultState);
-          const parsed = JSON.parse(raw);
-          return {
-            ...structuredClone(defaultState),
-            ...parsed,
-            user: { ...defaultState.user, ...(parsed.user || {}) },
-            prefs: { ...defaultState.prefs, ...(parsed.prefs || {}) }
-          };
-        } catch (_) {
-          return structuredClone(defaultState);
-        }
+    function applySavedTheme() {
+      const saved = localStorage.getItem("schrewizium_theme") || "dark";
+      document.documentElement.setAttribute("data-theme", saved);
+      document.getElementById("themeToggle").textContent = saved === "dark" ? "Light Mode" : "Dark Mode";
+    }
+    function toggleTheme() {
+      const cur = document.documentElement.getAttribute("data-theme") || "dark";
+      const next = cur === "dark" ? "light" : "dark";
+      localStorage.setItem("schrewizium_theme", next);
+      applySavedTheme();
+    }
+
+    function setAuthMode(mode) {
+      authMode = mode;
+      document.getElementById("tabRegister").className = mode === "register" ? "btn-primary" : "btn-ghost";
+      document.getElementById("tabLogin").className = mode === "login" ? "btn-primary" : "btn-ghost";
+      document.getElementById("authError").textContent = "";
+    }
+
+    function validateUsernameLive(val, errElId) {
+      const el = document.getElementById(errElId);
+      if (!val) { el.textContent = ""; return false; }
+      if (/\s/.test(val)) {
+        el.textContent = "You cannot use spaces in your username.";
+        return false;
       }
-
-      function saveState() {
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-        } catch (_) {}
+      if (!/^[a-zA-Z0-9_.]*$/.test(val)) {
+        el.textContent = "You cannot use special symbols. Only letters, numbers, '_' and '.' are allowed.";
+        return false;
       }
-
-      function showToast(msg) {
-        const el = document.getElementById("toastBanner");
-        el.textContent = msg;
-        el.classList.add("show");
-        clearTimeout(showToast._t);
-        showToast._t = setTimeout(() => el.classList.remove("show"), 2400);
+      if (val.length < 2 || val.length > 20) {
+        el.textContent = "Username must be between 2 and 20 characters.";
+        return false;
       }
+      el.textContent = "";
+      return true;
+    }
 
-      function escapeHtml(str) {
-        return String(str || "")
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;");
+    async function api(url, body = null) {
+      const opts = body
+        ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }
+        : { method: "GET" };
+      const res = await fetch(url, opts);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Request failed.");
+      return data;
+    }
+
+    async function submitAuth() {
+      const raw = document.getElementById("authUsername").value.trim();
+      if (!validateUsernameLive(raw, "authError")) {
+        if (!raw) document.getElementById("authError").textContent = "Enter a username first.";
+        return;
       }
-
-      function formatTime(ts) {
-        const d = new Date(ts || Date.now());
-        return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      try {
+        await api("/api/auth", { username: raw, mode: authMode });
+        document.getElementById("authModal").classList.add("hidden");
+        await syncNow();
+      } catch (err) {
+        document.getElementById("authError").textContent = err.message;
       }
+    }
 
-      // Build Holiday String Lights
-      function initLights() {
-        const container = document.getElementById("stringLights");
-        container.innerHTML = "";
-        const count = 28;
-        for (let i = 0; i < count; i++) {
-          const bulb = document.createElement("span");
-          bulb.className = "bulb";
-          container.appendChild(bulb);
-        }
+    async function logoutUser() {
+      await api("/api/logout", {});
+      closeProfileModal();
+      document.getElementById("authModal").classList.remove("hidden");
+    }
+
+    function renderAvatar(el, user) {
+      if (user && user.avatar) {
+        el.innerHTML = `<img src="${esc(user.avatar)}" class="avatar" onerror="this.remove()" />`;
+      } else {
+        el.textContent = (user?.username || "?")[0].toUpperCase();
       }
+    }
 
-      // Snow Animation
-      function initSnow() {
-        const canvas = document.getElementById("snowCanvas");
-        const ctx = canvas.getContext("2d");
-        let w = (canvas.width = window.innerWidth);
-        let h = (canvas.height = window.innerHeight);
+    function switchView(kind, target) {
+      if (currentKind !== kind || currentTarget !== target) {
+        cancelReply();
+        cancelEdit();
+      }
+      currentKind = kind;
+      currentTarget = target;
+      document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+      if (kind === "friends") document.getElementById("navFriends").classList.add("active");
+      if (kind === "bulletin") document.getElementById("navBulletin").classList.add("active");
+      if (kind === "polls") document.getElementById("navPolls").classList.add("active");
+      syncNow();
+    }
 
-        const flakes = Array.from({ length: 65 }, () => ({
-          x: Math.random() * w,
-          y: Math.random() * h,
-          r: 1.2 + Math.random() * 2.6,
-          vy: 0.6 + Math.random() * 1.4,
-          vx: -0.4 + Math.random() * 0.8
-        }));
+    function openProfileModal() {
+      if (!appState?.me) return;
+      const me = appState.me;
+      document.getElementById("profUsername").value = me.username || "";
+      document.getElementById("profStatus").value = me.status || "online";
+      document.getElementById("profCustomStatus").value = me.custom_status || "";
+      document.getElementById("profPronouns").value = me.pronouns || "";
+      document.getElementById("profAvatar").value = me.avatar || "";
+      document.getElementById("profBio").value = me.bio || "";
+      document.getElementById("profBanner").value = me.banner_color || "#2b2d31";
+      document.getElementById("profileBannerPreview").style.background = me.banner_color || "#2b2d31";
+      document.getElementById("profError").textContent = "";
+      document.getElementById("profSaved").textContent = "";
+      document.getElementById("profileModal").classList.remove("hidden");
+    }
+    function closeProfileModal() {
+      document.getElementById("profileModal").classList.add("hidden");
+    }
 
-        window.addEventListener("resize", () => {
-          w = canvas.width = window.innerWidth;
-          h = canvas.height = window.innerHeight;
+    async function saveProfile() {
+      const uname = document.getElementById("profUsername").value.trim();
+      if (!validateUsernameLive(uname, "profError")) return;
+      try {
+        await api("/api/profile", {
+          username: uname,
+          status: document.getElementById("profStatus").value,
+          custom_status: document.getElementById("profCustomStatus").value.trim(),
+          pronouns: document.getElementById("profPronouns").value.trim(),
+          avatar: document.getElementById("profAvatar").value.trim(),
+          bio: document.getElementById("profBio").value.trim(),
+          banner_color: document.getElementById("profBanner").value,
         });
-
-        function tick() {
-          ctx.clearRect(0, 0, w, h);
-          if (state.prefs.snow) {
-            ctx.fillStyle = "rgba(224, 242, 254, 0.72)";
-            for (const f of flakes) {
-              ctx.beginPath();
-              ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
-              ctx.fill();
-              f.y += f.vy;
-              f.x += f.vx;
-              if (f.y > h) {
-                f.y = -6;
-                f.x = Math.random() * w;
-              }
-              if (f.x > w) f.x = 0;
-              if (f.x < 0) f.x = w;
-            }
-          }
-          requestAnimationFrame(tick);
-        }
-        tick();
+        document.getElementById("profSaved").textContent = "Profile updated.";
+        await syncNow();
+      } catch (err) {
+        document.getElementById("profError").textContent = err.message;
       }
+    }
 
-      // Apply Appearance & Preferences
-      function applyPrefs() {
-        const p = state.prefs;
-        document.body.className = "";
-        if (p.theme === "aurora") document.body.classList.add("theme-aurora");
-        if (p.theme === "ember") document.body.classList.add("theme-ember");
-        if (p.theme === "violet") document.body.classList.add("theme-violet");
-        if (!p.glow) document.body.classList.add("no-glow");
-        if (!p.blur) document.body.classList.add("flat-glass");
-        if (p.compact) document.body.classList.add("compact-ui");
-
-        document.getElementById("stringLights").classList.toggle("hidden-lights", !p.lights);
-        document.getElementById("appShell").classList.toggle("hide-right", !!p.hideRight);
-
-        document.getElementById("themeSelect").value = p.theme;
-        document.getElementById("toggleSnow").checked = !!p.snow;
-        document.getElementById("toggleLights").checked = !!p.lights;
-        document.getElementById("toggleGlow").checked = !!p.glow;
-        document.getElementById("toggleBlur").checked = !!p.blur;
-        document.getElementById("toggleCompact").checked = !!p.compact;
-        document.getElementById("toggleHideRight").checked = !!p.hideRight;
-        document.getElementById("syncIntervalSelect").value = String(p.syncInterval);
-        document.getElementById("enterToSendCheck").checked = !!p.enterToSend;
-
-        restartSyncTimer();
+    async function sendFriendReq() {
+      const input = document.getElementById("friendSearchInput");
+      const feedback = document.getElementById("friendFeedback");
+      const val = input.value.trim();
+      if (!val) { feedback.className = "err-text"; feedback.textContent = "Type an exact username."; return; }
+      try {
+        await api("/api/friends/request", { username: val });
+        feedback.className = "ok-text";
+        feedback.textContent = `Friend request sent to @${val}.`;
+        input.value = "";
+        await syncNow();
+      } catch (err) {
+        feedback.className = "err-text";
+        feedback.textContent = err.message;
       }
+    }
 
-      function renderRightSidebar() {
-        const u = state.user;
-        document.getElementById("profileAvatar").textContent = (u.name || u.username || "G").charAt(0).toUpperCase();
-        document.getElementById("profileDisplayName").textContent = u.name || "Guest";
-        document.getElementById("profileHandle").textContent = "@" + (u.username || "guest");
-        document.getElementById("profileStatusLabel").textContent = u.status || "Browsing";
-        document.getElementById("quickStatusSelect").value = u.status || "Browsing";
+    async function respondFriend(userId, action) {
+      await api("/api/friends/respond", { user_id: userId, action });
+      await syncNow();
+    }
 
-        const members = state.members || [];
-        document.getElementById("activeMembersCount").textContent = String(members.length);
-        const listEl = document.getElementById("rightMembersList");
-        listEl.innerHTML = members.length
-          ? members.map(m => `
-              <div class="member-chip">
-                <span style="font-family:var(--font-mono); font-size:12px;">@${escapeHtml(m.username)}</span>
-                <span style="display:flex; align-items:center; gap:5px; font-size:11px; color:var(--text-muted);">
-                  <span class="status-dot-sm status-${escapeHtml(m.status || "online")}"></span>
-                  ${escapeHtml(m.status || "online")}
-                </span>
-              </div>
-            `).join("")
-          : `<div class="empty-state">No active members synced.</div>`;
+    async function promptCreateGC() {
+      const name = prompt("Group chat name:");
+      if (!name || !name.trim()) return;
+      const res = await api("/api/gcs/create", { name: name.trim(), is_public: true });
+      if (res.gc_id) switchView("gc", res.gc_id);
+      else await syncNow();
+    }
+
+    function startReply(msgId, authorName, text) {
+      cancelEdit();
+      replyingTo = { id: msgId, author_username: authorName, text };
+      document.getElementById("replyLabel").textContent = `Replying to @${authorName}: ${text.slice(0, 60)}`;
+      document.getElementById("replyBar").classList.remove("hidden");
+      document.getElementById("chatInput").focus();
+    }
+    function cancelReply() {
+      replyingTo = null;
+      document.getElementById("replyBar").classList.add("hidden");
+    }
+
+    function startEdit(msgId, text) {
+      cancelReply();
+      editingMsg = { id: msgId, text };
+      document.getElementById("editBar").classList.remove("hidden");
+      document.getElementById("composerSubmitBtn").textContent = "Save";
+      const inp = document.getElementById("chatInput");
+      inp.value = text;
+      inp.focus();
+    }
+    function cancelEdit() {
+      editingMsg = null;
+      document.getElementById("editBar").classList.add("hidden");
+      document.getElementById("composerSubmitBtn").textContent = "Send";
+    }
+
+    function handleComposerKey(e) {
+      if (e.key === "Escape") {
+        cancelReply();
+        cancelEdit();
+        return;
       }
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        submitChatAction();
+      }
+    }
 
-      function renderLeftSidebar() {
-        document.getElementById("navFriendsCount").textContent = String(state.friends.length);
-        document.getElementById("navPollsCount").textContent = String(state.polls.length);
+    function insertMention(username) {
+      const inp = document.getElementById("chatInput");
+      if (!inp || inp.closest(".hidden")) return;
+      const cur = inp.value;
+      inp.value = `${cur}${cur && !cur.endsWith(" ") ? " " : ""}@${username} `;
+      inp.focus();
+    }
 
-        document.querySelectorAll(".left-sidebar .nav-item[data-view]").forEach(btn => {
-          const v = btn.dataset.view;
-          const b = btn.dataset.board;
-          let isActive = false;
-          if (state.view === "bulletins" && v === "bulletins") {
-            if (b && btn.classList.contains("board-btn")) {
-              isActive = state.activeBoard === b;
-            } else if (!btn.classList.contains("board-btn")) {
-              isActive = true;
-            }
-          } else if (state.view === v && v !== "bulletins") {
-            isActive = true;
-          }
-          btn.classList.toggle("active", isActive);
+    async function submitChatAction() {
+      const input = document.getElementById("chatInput");
+      const text = input.value.trim();
+      if (!text) return;
+
+      if (editingMsg) {
+        const targetMsgId = editingMsg.id;
+        cancelEdit();
+        input.value = "";
+        await api("/api/messages/edit", {
+          kind: currentKind,
+          target_id: currentTarget,
+          msg_id: targetMsgId,
+          text,
         });
+      } else {
+        const replyId = replyingTo ? replyingTo.id : null;
+        cancelReply();
+        input.value = "";
+        await api("/api/messages/send", {
+          kind: currentKind,
+          target_id: currentTarget,
+          text,
+          reply_to: replyId,
+        });
+      }
+      await syncNow();
+    }
 
-        const groupsEl = document.getElementById("sidebarGroupsList");
-        groupsEl.innerHTML = state.groups.map(g => {
-          const active = state.view === "group_chat" && state.activeGroupId === g.id;
-          return `
-            <button class="nav-item ${active ? "active" : ""}" data-open-group="${escapeHtml(g.id)}">
-              <span class="nav-item-left"><span class="nav-item-label"># ${escapeHtml(g.name)}</span></span>
-              ${g.isPublic ? `<span class="badge-public">PUBLIC</span>` : ""}
-            </button>
-          `;
-        }).join("");
+    async function deleteChatMessage(msgId) {
+      if (editingMsg && editingMsg.id === msgId) cancelEdit();
+      await api("/api/messages/delete", {
+        kind: currentKind,
+        target_id: currentTarget,
+        msg_id: msgId,
+      });
+      await syncNow();
+    }
 
-        const dmTargets = Array.from(new Set(["hearth-bot", ...state.friends]));
-        const dmsEl = document.getElementById("sidebarDmsList");
-        dmsEl.innerHTML = dmTargets.map(handle => {
-          const active = state.view === "dm" && state.activeDmUser === handle;
-          return `
-            <button class="nav-item ${active ? "active" : ""}" data-open-dm="${escapeHtml(handle)}">
-              <span class="nav-item-left"><span class="nav-item-label">@${escapeHtml(handle)}</span></span>
-            </button>
-          `;
-        }).join("");
+    async function notifyTyping() {
+      if (currentKind !== "gc" && currentKind !== "dm") return;
+      const now = Date.now();
+      if (now - lastTypingSent < 1500) return;
+      lastTypingSent = now;
+      fetch("/api/typing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind: currentKind, target_id: currentTarget }),
+      });
+    }
+
+    async function createBulletin() {
+      const title = document.getElementById("bulTitle").value.trim();
+      const body = document.getElementById("bulBody").value.trim();
+      if (!title || !body) return;
+      await api("/api/bulletin/post", { title, body });
+      await syncNow();
+    }
+
+    async function createPoll() {
+      const q = document.getElementById("pollQ").value.trim();
+      const opts = document.getElementById("pollOpts").value.split(",").map(s => s.trim()).filter(Boolean);
+      if (!q || opts.length < 2) return;
+      await api("/api/polls/create", { question: q, options: opts });
+      await syncNow();
+    }
+
+    async function votePoll(pollId, optionId) {
+      await api("/api/polls/vote", { poll_id: pollId, option_id: optionId });
+      await syncNow();
+    }
+
+    function renderUI(data) {
+      appState = data;
+      const me = data.me;
+      document.getElementById("dockUsername").textContent = "@" + me.username;
+      document.getElementById("dockCustomStatus").textContent = me.custom_status || me.status;
+      document.getElementById("dockStatusDot").className = "status-dot status-" + (me.status || "online");
+      renderAvatar(document.getElementById("dockAvatar"), me);
+
+      const reqBadge = document.getElementById("reqBadge");
+      if (data.incoming.length > 0) {
+        reqBadge.textContent = data.incoming.length;
+        reqBadge.classList.remove("hidden");
+      } else {
+        reqBadge.classList.add("hidden");
       }
 
-      // Center View Renderers
-      function renderCenter() {
-        const stage = document.getElementById("centerStage");
-        if (state.view === "bulletins") {
-          renderBulletinsView(stage);
-        } else if (state.view === "friends") {
-          renderFriendsView(stage);
-        } else if (state.view === "polls") {
-          renderPollsView(stage);
-        } else if (state.view === "group_chat") {
-          renderGroupChatView(stage);
-        } else if (state.view === "dm") {
-          renderDmView(stage);
-        }
-      }
+      const gcList = document.getElementById("gcList");
+      gcList.innerHTML = data.gcs.map(g => `
+        <div class="nav-item ${currentKind==='gc' && currentTarget===g.id ? 'active' : ''}" onclick="switchView('gc','${g.id}')">
+          <span># ${esc(g.name)}</span>
+          <span class="row" style="gap:5px;">
+            ${g.mention_unread ? '<span class="badge">@</span>' : ''}
+            <span style="font-size:11px; color:var(--text-muted);">${g.member_count}</span>
+          </span>
+        </div>
+      `).join("");
 
-      function renderBulletinsView(stage) {
-        const q = (state.searchQuery || "").trim().toLowerCase();
-        let list = state.bulletins.filter(post => {
-          const matchesBoard = !state.activeBoard || state.activeBoard === "International (Main)" || post.board === state.activeBoard;
-          const matchesCat = !state.activeCategory || state.activeCategory === "International" || post.category === state.activeCategory;
-          const matchesSearch = !q ||
-            (post.title || "").toLowerCase().includes(q) ||
-            (post.body || "").toLowerCase().includes(q) ||
-            (post.author || "").toLowerCase().includes(q) ||
-            (post.category || "").toLowerCase().includes(q);
-          return matchesBoard && matchesCat && matchesSearch;
-        });
+      const dmList = document.getElementById("dmList");
+      dmList.innerHTML = data.dms.map(d => `
+        <div class="nav-item ${currentKind==='dm' && currentTarget===d.user.id ? 'active' : ''}" onclick="switchView('dm','${d.user.id}')">
+          <span>@${esc(d.user.username)}</span>
+          ${d.unread ? '<span class="badge">new</span>' : ''}
+        </div>
+      `).join("");
 
-        list.sort((a, b) => {
-          if (a.pinned && !b.pinned) return -1;
-          if (!a.pinned && b.pinned) return 1;
-          return state.sortOrder === "oldest" ? a.createdAt - b.createdAt : b.createdAt - a.createdAt;
-        });
+      const rightList = document.getElementById("rightMemberList");
+      const users = Object.values(data.users || {});
+      rightList.innerHTML = users.map(u => `
+        <div class="card" style="padding:9px 10px;">
+          <div class="row" style="justify-content:space-between;">
+            <strong style="font-size:13px; cursor:pointer;" onclick="insertMention('${esc(u.username)}')">@${esc(u.username)}</strong>
+            <span style="font-size:11px; color:var(--text-muted);">${esc(u.status)}${u.pronouns ? ' • ' + esc(u.pronouns) : ''}</span>
+          </div>
+          ${u.custom_status ? `<div style="font-size:12px; color:var(--text-muted); margin-top:2px;">${esc(u.custom_status)}</div>` : ""}
+          ${u.bio ? `<div style="font-size:11px; color:var(--text-muted); margin-top:4px;">${esc(u.bio)}</div>` : ""}
+        </div>
+      `).join("");
 
-        stage.innerHTML = `
-          <div class="stage-header">
-            <div>
-              <h1 class="stage-title">${escapeHtml(state.activeBoard || "International Bulletin")}</h1>
-              <div class="stage-subtitle">Main Parlour • Forums, replies, edit &amp; delete</div>
+      const center = document.getElementById("centerScroll");
+      const composerWrap = document.getElementById("composerWrap");
+      const typingBar = document.getElementById("typingBar");
+
+      if (currentKind === "friends") {
+        document.getElementById("headerTitle").textContent = "Friends";
+        composerWrap.classList.add("hidden");
+        typingBar.classList.add("hidden");
+        center.innerHTML = `
+          <div class="card">
+            <h3 style="margin-bottom:8px;">Add Friend (Server Verified)</h3>
+            <div class="row">
+              <input id="friendSearchInput" style="flex:1;" placeholder="Enter exact registered username..." onkeydown="if(event.key==='Enter') sendFriendReq()" />
+              <button class="btn-primary" onclick="sendFriendReq()">Send Request</button>
             </div>
-            <div class="stage-controls">
-              <button class="primary-btn" id="newForumBtn">+ New Forum</button>
-              <select class="select-control" id="sortSelect">
-                <option value="newest" ${state.sortOrder === "newest" ? "selected" : ""}>Newest First</option>
-                <option value="oldest" ${state.sortOrder === "oldest" ? "selected" : ""}>Oldest First</option>
-              </select>
-            </div>
+            <div id="friendFeedback"></div>
           </div>
-
-          <div class="pills-row">
-            ${CATEGORIES.map(cat => `
-              <button class="pill-btn ${state.activeCategory === cat ? "active" : ""}" data-cat="${escapeHtml(cat)}">${escapeHtml(cat)}</button>
-            `).join("")}
-          </div>
-
-          <div class="search-bar-wrap">
-            <input type="text" class="search-input" id="forumSearchInput" value="${escapeHtml(state.searchQuery)}" placeholder="Search forums, tags, or authors..." />
-          </div>
-
-          <div id="forumsContainer">
-            ${list.length ? list.map(post => `
-              <article class="card-box ${post.pinned ? "pinned" : ""}" data-post-id="${escapeHtml(post.id)}">
-                <div class="post-meta-top">
-                  <div class="post-author-row">
-                    <strong style="color:var(--text-main);">@${escapeHtml(post.author)}</strong>
-                    <span>•</span>
-                    <span>${formatTime(post.createdAt)}</span>
-                    <span class="tag-chip">${escapeHtml(post.category || "International")}</span>
-                    ${post.pinned ? `<span class="tag-chip" style="color:var(--holiday-gold); border-color:rgba(251,191,36,0.4);">PINNED</span>` : ""}
+          ${data.incoming.length ? `
+            <div class="card">
+              <h4 style="margin-bottom:8px;">Incoming Requests (${data.incoming.length})</h4>
+              ${data.incoming.map(u => `
+                <div class="row" style="justify-content:space-between; padding:6px 0;">
+                  <span>@${esc(u.username)}</span>
+                  <div class="row">
+                    <button class="btn-primary" onclick="respondFriend('${u.id}','accept')">Accept</button>
+                    <button class="btn-danger" onclick="respondFriend('${u.id}','decline')">Decline</button>
                   </div>
                 </div>
-                <div class="post-title">${escapeHtml(post.title)}</div>
-                <div class="post-body">${escapeHtml(post.body)}</div>
-
-                <div class="post-actions">
-                  <button class="ghost-btn" data-action="toggle-reply" data-id="${escapeHtml(post.id)}">Reply (${(post.replies || []).length})</button>
-                  <button class="ghost-btn" data-action="edit-post" data-id="${escapeHtml(post.id)}">Edit</button>
-                  <button class="ghost-btn" data-action="pin-post" data-id="${escapeHtml(post.id)}">${post.pinned ? "Unpin" : "Pin"}</button>
-                  <button class="danger-btn" data-action="delete-post" data-id="${escapeHtml(post.id)}">Delete</button>
-                </div>
-
-                <div class="replies-box" id="replies-${escapeHtml(post.id)}">
-                  ${(post.replies || []).map(r => `
-                    <div class="reply-item">
-                      <strong style="color:var(--accent); font-family:var(--font-mono);">@${escapeHtml(r.author)}</strong>: ${escapeHtml(r.text)}
-                    </div>
-                  `).join("")}
-                  <div style="display:flex; gap:6px; margin-top:4px;">
-                    <input type="text" class="text-input" data-reply-input="${escapeHtml(post.id)}" placeholder="Write a reply..." style="padding:6px 10px; font-size:12px;" />
-                    <button class="primary-btn" data-action="send-reply" data-id="${escapeHtml(post.id)}" style="padding:6px 11px; font-size:12px;">Post</button>
-                  </div>
-                </div>
-              </article>
-            `).join("") : `
-              <div class="empty-state">No forums in ${escapeHtml(state.activeCategory || "International")} yet.</div>
-            `}
-          </div>
-        `;
-
-        document.getElementById("newForumBtn").onclick = openForumComposer;
-        document.getElementById("sortSelect").onchange = (e) => {
-          state.sortOrder = e.target.value;
-          saveState();
-          renderCenter();
-        };
-        document.getElementById("forumSearchInput").oninput = (e) => {
-          state.searchQuery = e.target.value;
-          saveState();
-          renderCenter();
-          const inp = document.getElementById("forumSearchInput");
-          inp.focus();
-          inp.setSelectionRange(inp.value.length, inp.value.length);
-        };
-        stage.querySelectorAll(".pill-btn[data-cat]").forEach(btn => {
-          btn.onclick = () => {
-            state.activeCategory = btn.dataset.cat;
-            saveState();
-            renderCenter();
-          };
-        });
-      }
-
-      function renderFriendsView(stage) {
-        stage.innerHTML = `
-          <div class="stage-header">
-            <div>
-              <h1 class="stage-title">Friends</h1>
-              <div class="stage-subtitle">Add friends by username, view your roster, and jump straight into DMs</div>
-            </div>
-          </div>
-
-          <div class="card-box">
-            <div class="post-title">Add Friend</div>
-            <div style="display:flex; gap:8px; margin-top:8px;">
-              <input type="text" class="text-input" id="addFriendInput" placeholder="Type username (no spaces)..." />
-              <button class="primary-btn" id="addFriendSubmitBtn">Add Friend</button>
-            </div>
-          </div>
-
-          <div class="card-box">
-            <div class="post-title">Friends (${state.friends.length})</div>
-            ${state.friends.length ? state.friends.map(f => `
-              <div class="member-chip" style="margin-top:8px; padding:10px 12px;">
+              `).join("")}
+            </div>` : ""}
+          ${data.outgoing.length ? `
+            <div class="card">
+              <h4 style="margin-bottom:8px;">Outgoing Pending (${data.outgoing.length})</h4>
+              ${data.outgoing.map(u => `<div style="padding:4px 0; color:var(--text-muted);">@${esc(u.username)} (pending)</div>`).join("")}
+            </div>` : ""}
+          <div class="card">
+            <h4 style="margin-bottom:8px;">Friends (${data.friends.length})</h4>
+            ${data.friends.length ? data.friends.map(f => `
+              <div class="row" style="justify-content:space-between; padding:7px 0; border-bottom:1px solid var(--border);">
                 <div>
-                  <strong style="font-family:var(--font-mono); color:var(--accent);">@${escapeHtml(f)}</strong>
-                  <span style="margin-left:8px; font-size:11.5px; color:var(--success);">• Online</span>
+                  <strong>@${esc(f.username)}</strong>
+                  <span style="font-size:12px; color:var(--text-muted); margin-left:6px;">${esc(f.status)}${f.custom_status ? ' • ' + esc(f.custom_status) : ''}</span>
                 </div>
-                <div style="display:flex; gap:6px;">
-                  <button class="ghost-btn" data-dm-friend="${escapeHtml(f)}">Message</button>
-                  <button class="danger-btn" data-remove-friend="${escapeHtml(f)}">Remove</button>
-                </div>
+                <button class="btn-primary" onclick="switchView('dm','${f.id}')">Message</button>
               </div>
-            `).join("") : `<div class="empty-state">No friends yet.</div>`}
+            `).join("") : `<p style="color:var(--text-muted); font-size:13px;">No friends added yet.</p>`}
           </div>
         `;
+      } else if (currentKind === "gc" || currentKind === "dm") {
+        const gcObj = data.gcs.find(g => g.id === currentTarget);
+        const dmObj = data.users[currentTarget];
+        document.getElementById("headerTitle").textContent = currentKind === "gc" ? `# ${gcObj?.name || currentTarget}` : `@${dmObj?.username || "DM"}`;
+        composerWrap.classList.remove("hidden");
+        typingBar.classList.remove("hidden");
+        const typers = data.active?.typing || [];
+        typingBar.textContent = typers.length ? `${typers.join(", ")} typing...` : "";
 
-        const addFn = () => {
-          const inp = document.getElementById("addFriendInput");
-          const raw = (inp.value || "").trim().replace(/^@+/, "").replace(/\s+/g, "");
-          if (!raw) return showToast("Enter a valid username with no spaces.");
-          if (raw === state.user.username) return showToast("You cannot add yourself.");
-          if (state.friends.includes(raw)) return showToast("@" + raw + " is already in your friends list.");
-          state.friends.push(raw);
-          if (!state.dmMessages[raw]) state.dmMessages[raw] = [];
-          saveState();
-          syncWithBackend("friend_add", { friend: raw });
-          showToast("Added @" + raw);
-          renderLeftSidebar();
-          renderCenter();
-        };
+        const msgs = data.active?.messages || [];
+        const wasAtBottom = center.scrollHeight - center.scrollTop - center.clientHeight < 60;
+        center.innerHTML = msgs.length ? msgs.map(m => {
+          const sender = data.users[m.author_id] || { username: m.author_username || "user" };
+          const isMine = m.author_id === me.id;
+          const isMentioned = Array.isArray(m.mentions) && m.mentions.includes(me.id);
+          const timeStr = m.ts ? new Date(m.ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
+          const replyHtml = m.reply_to
+            ? `<div class="reply-quote">↩ <strong>@${esc(m.reply_to.author_username)}</strong>: ${esc(m.reply_to.text)}</div>`
+            : "";
 
-        document.getElementById("addFriendSubmitBtn").onclick = addFn;
-        document.getElementById("addFriendInput").onkeydown = (e) => {
-          if (e.key === "Enter") addFn();
-        };
-
-        stage.querySelectorAll("[data-dm-friend]").forEach(btn => {
-          btn.onclick = () => {
-            state.view = "dm";
-            state.activeDmUser = btn.dataset.dmFriend;
-            saveState();
-            renderLeftSidebar();
-            renderCenter();
-          };
-        });
-
-        stage.querySelectorAll("[data-remove-friend]").forEach(btn => {
-          btn.onclick = () => {
-            state.friends = state.friends.filter(x => x !== btn.dataset.removeFriend);
-            saveState();
-            renderLeftSidebar();
-            renderCenter();
-          };
-        });
-      }
-
-      function renderPollsView(stage) {
-        stage.innerHTML = `
-          <div class="stage-header">
-            <div>
-              <h1 class="stage-title">Polls</h1>
-              <div class="stage-subtitle">Community votes and live results</div>
-            </div>
-            <button class="primary-btn" id="createPollBtn">+ New Poll</button>
-          </div>
-
-          ${state.polls.length ? state.polls.map(poll => {
-            const totalVotes = poll.options.reduce((acc, o) => acc + (o.votes || 0), 0) || 1;
-            return `
-              <div class="card-box">
-                <div class="post-meta-top">
-                  <span class="tag-chip">POLL</span>
-                  <span style="font-size:12px; color:var(--text-muted);">by @${escapeHtml(poll.author)} • ${poll.options.reduce((acc, o) => acc + (o.votes || 0), 0)} votes</span>
+          return `
+            <div class="msg-row ${isMentioned ? 'mentioned' : ''}">
+              <div class="msg-actions">
+                <button class="msg-act-btn" onclick="startReply('${m.id}', '${esc(sender.username)}', ${JSON.stringify(m.text)})">Reply</button>
+                ${isMine ? `
+                  <button class="msg-act-btn" onclick="startEdit('${m.id}', ${JSON.stringify(m.text)})">Edit</button>
+                  <button class="msg-act-btn del" onclick="deleteChatMessage('${m.id}')">Delete</button>
+                ` : ""}
+              </div>
+              <div class="avatar">${esc(sender.username[0].toUpperCase())}</div>
+              <div class="msg-body">
+                ${replyHtml}
+                <div class="msg-meta">
+                  <span class="msg-author" onclick="insertMention('${esc(sender.username)}')">@${esc(sender.username)}</span>
+                  <span class="msg-time">${timeStr}</span>
+                  ${m.edited ? '<span class="msg-edited">(edited)</span>' : ''}
                 </div>
-                <div class="post-title">${escapeHtml(poll.question)}</div>
-                ${poll.options.map(opt => {
-                  const pct = Math.round(((opt.votes || 0) / totalVotes) * 100);
-                  const picked = poll.userVotedOptionId === opt.id;
-                  return `
-                    <div class="poll-option-row">
-                      <button class="poll-bar-btn" data-vote-poll="${escapeHtml(poll.id)}" data-vote-opt="${escapeHtml(opt.id)}" style="${picked ? "border-color:var(--accent);" : ""}">
-                        <span class="poll-fill" style="width:${pct}%;"></span>
-                        <span style="position:relative; z-index:1;">${picked ? "✓ " : ""}${escapeHtml(opt.label)}</span>
-                        <span style="position:relative; z-index:1; font-family:var(--font-mono); font-size:11.5px; color:var(--accent);">${opt.votes || 0} (${pct}%)</span>
-                      </button>
-                    </div>
-                  `;
-                }).join("")}
+                <div class="msg-text">${formatMsgText(m.text)}</div>
               </div>
-            `;
-          }).join("") : `<div class="empty-state">No active polls yet.</div>`}
-        `;
-
-        document.getElementById("createPollBtn").onclick = openPollComposer;
-        stage.querySelectorAll("[data-vote-poll]").forEach(btn => {
-          btn.onclick = () => {
-            const poll = state.polls.find(p => p.id === btn.dataset.votePoll);
-            if (!poll) return;
-            const prevOpt = poll.options.find(o => o.id === poll.userVotedOptionId);
-            if (prevOpt && prevOpt.votes > 0) prevOpt.votes -= 1;
-            const nextOpt = poll.options.find(o => o.id === btn.dataset.voteOpt);
-            if (nextOpt) nextOpt.votes = (nextOpt.votes || 0) + 1;
-            poll.userVotedOptionId = btn.dataset.voteOpt;
-            saveState();
-            renderCenter();
-          };
-        });
-      }
-
-      function renderGroupChatView(stage) {
-        const group = state.groups.find(g => g.id === state.activeGroupId) || state.groups[0];
-        const msgs = state.groupMessages[group.id] || [];
-        const pinText = state.pins[group.id] || "";
-
-        stage.innerHTML = `
-          <div class="chat-layout">
-            <div class="stage-header" style="margin-bottom:8px;">
-              <div>
-                <h1 class="stage-title"># ${escapeHtml(group.name)}</h1>
-                <div class="stage-subtitle">Group Chat • ${group.isPublic ? "Public Lounge" : "Private Group"}</div>
-              </div>
-              <button class="ghost-btn" id="createGroupInlineBtn">+ New Group</button>
             </div>
-
-            ${pinText ? `
-              <div class="pins-bar">
-                <span>📌 <strong>Pinned:</strong> ${escapeHtml(pinText)}</span>
-                <button class="ghost-btn" id="clearPinBtn" style="padding:3px 8px; font-size:11px;">Clear</button>
-              </div>
-            ` : ""}
-
-            <div class="messages-stream" id="messagesStream">
-              ${msgs.length ? msgs.map(m => `
-                <div class="msg-row ${m.pinned ? "pinned" : ""}">
-                  <div class="msg-head">
-                    <span class="msg-user">@${escapeHtml(m.author)}</span>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                      <span class="msg-time">${escapeHtml(m.time || "")}</span>
-                      <button class="ghost-btn" data-pin-msg="${escapeHtml(m.text)}" style="padding:2px 7px; font-size:10.5px;">Pin</button>
-                    </div>
-                  </div>
-                  <div class="post-body">${escapeHtml(m.text)}</div>
-                </div>
-              `).join("") : `<div class="empty-state">No messages in #${escapeHtml(group.name)} yet.</div>`}
-            </div>
-
-            <div class="typing-bar" id="typingIndicatorBar"></div>
-
-            <div class="chat-compose">
-              <input type="text" class="text-input" id="chatMessageInput" placeholder="Message #${escapeHtml(group.name)}..." />
-              <button class="primary-btn" id="sendChatBtn">Send</button>
-            </div>
+          `;
+        }).join("") : `<p style="color:var(--text-muted); font-size:13px;">No messages in this room yet. Say hello!</p>`;
+        if (wasAtBottom) center.scrollTop = center.scrollHeight;
+      } else if (currentKind === "bulletin") {
+        document.getElementById("headerTitle").textContent = "Bulletin Board";
+        composerWrap.classList.add("hidden");
+        typingBar.classList.add("hidden");
+        center.innerHTML = `
+          <div class="card" style="display:flex; flex-direction:column; gap:8px;">
+            <input id="bulTitle" placeholder="Announcement title..." />
+            <textarea id="bulBody" rows="2" placeholder="Write post..."></textarea>
+            <button class="btn-primary" style="align-self:flex-start;" onclick="createBulletin()">Post Bulletin</button>
           </div>
+          ${(data.bulletin || []).map(b => `
+            <div class="card">
+              <strong>${esc(b.title)}</strong>
+              <div style="font-size:11px; color:var(--text-muted); margin:3px 0 6px;">by @${esc(b.author_username || "user")}</div>
+              <p style="font-size:14px;">${esc(b.body)}</p>
+            </div>
+          `).join("")}
         `;
-
-        bindChatComposer("group", group.id);
-        renderTypingBar();
-
-        const clearPinBtn = document.getElementById("clearPinBtn");
-        if (clearPinBtn) {
-          clearPinBtn.onclick = () => {
-            state.pins[group.id] = "";
-            saveState();
-            renderCenter();
-          };
-        }
-        stage.querySelectorAll("[data-pin-msg]").forEach(btn => {
-          btn.onclick = () => {
-            state.pins[group.id] = btn.dataset.pinMsg;
-            saveState();
-            showToast("Pinned message in #" + group.name);
-            renderCenter();
-          };
-        });
-        document.getElementById("createGroupInlineBtn").onclick = openGroupComposer;
-      }
-
-      function renderDmView(stage) {
-        const target = state.activeDmUser || "hearth-bot";
-        const msgs = state.dmMessages[target] || [];
-
-        stage.innerHTML = `
-          <div class="chat-layout">
-            <div class="stage-header" style="margin-bottom:8px;">
-              <div>
-                <h1 class="stage-title">@${escapeHtml(target)}</h1>
-                <div class="stage-subtitle">Direct Message</div>
-              </div>
-            </div>
-
-            <div class="messages-stream" id="messagesStream">
-              ${msgs.length ? msgs.map(m => `
-                <div class="msg-row">
-                  <div class="msg-head">
-                    <span class="msg-user">@${escapeHtml(m.author)}</span>
-                    <span class="msg-time">${escapeHtml(m.time || "")}</span>
-                  </div>
-                  <div class="post-body">${escapeHtml(m.text)}</div>
-                </div>
-              `).join("") : `<div class="empty-state">Start a direct conversation with @${escapeHtml(target)}.</div>`}
-            </div>
-
-            <div class="typing-bar" id="typingIndicatorBar"></div>
-
-            <div class="chat-compose">
-              <input type="text" class="text-input" id="chatMessageInput" placeholder="Message @${escapeHtml(target)}..." />
-              <button class="primary-btn" id="sendChatBtn">Send</button>
-            </div>
+      } else if (currentKind === "polls") {
+        document.getElementById("headerTitle").textContent = "Polls";
+        composerWrap.classList.add("hidden");
+        typingBar.classList.add("hidden");
+        center.innerHTML = `
+          <div class="card" style="display:flex; flex-direction:column; gap:8px;">
+            <input id="pollQ" placeholder="Poll question..." />
+            <input id="pollOpts" placeholder="Options separated by commas (e.g. Yes, No)" />
+            <button class="btn-primary" style="align-self:flex-start;" onclick="createPoll()">Create Poll</button>
           </div>
+          ${(data.polls || []).map(p => `
+            <div class="card">
+              <strong style="display:block; margin-bottom:8px;">${esc(p.question)}</strong>
+              ${(p.options || []).map(opt => `
+                <button class="btn-ghost" style="display:block; width:100%; text-align:left; margin-bottom:6px;" onclick="votePoll('${p.id}', '${opt.id}')">
+                  ${esc(opt.label)} — <strong>${(opt.votes || []).length} votes</strong>
+                </button>
+              `).join("")}
+            </div>
+          `).join("")}
         `;
-
-        bindChatComposer("dm", target);
-        renderTypingBar();
       }
+    }
 
-      function bindChatComposer(mode, targetKey) {
-        const input = document.getElementById("chatMessageInput");
-        const sendBtn = document.getElementById("sendChatBtn");
-
-        const send = () => {
-          const text = (input.value || "").trim();
-          if (!text) return;
-          const entry = {
-            id: "msg-" + Date.now(),
-            author: state.user.username || "guest",
-            text,
-            time: formatTime(Date.now()),
-            pinned: false
-          };
-          if (mode === "group") {
-            if (!state.groupMessages[targetKey]) state.groupMessages[targetKey] = [];
-            state.groupMessages[targetKey].push(entry);
-          } else {
-            if (!state.dmMessages[targetKey]) state.dmMessages[targetKey] = [];
-            state.dmMessages[targetKey].push(entry);
-          }
-          input.value = "";
-          saveState();
-          syncWithBackend("message", { mode, target: targetKey, message: entry });
-          renderCenter();
-          const stream = document.getElementById("messagesStream");
-          if (stream) stream.scrollTop = stream.scrollHeight;
-        };
-
-        sendBtn.onclick = send;
-        input.oninput = () => {
-          emitTyping(targetKey);
-        };
-        input.onkeydown = (e) => {
-          if (state.prefs.enterToSend && e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            send();
-          }
-        };
-      }
-
-      function emitTyping(channel) {
-        const me = state.user.username || "guest";
-        if (!state.typingUsers.includes(me)) {
-          state.typingUsers.push(me);
-        }
-        renderTypingBar();
-        syncWithBackend("typing", { channel, username: me, typing: true });
-        clearTimeout(typingTimeout);
-        typingTimeout = setTimeout(() => {
-          state.typingUsers = state.typingUsers.filter(u => u !== me);
-          renderTypingBar();
-          syncWithBackend("typing", { channel, username: me, typing: false });
-        }, 2200);
-      }
-
-      function renderTypingBar() {
-        const bar = document.getElementById("typingIndicatorBar");
-        if (!bar) return;
-        const others = (state.typingUsers || []).filter(Boolean);
-        if (!others.length) {
-          bar.textContent = "";
+    async function syncNow() {
+      try {
+        const res = await fetch(`/api/sync?kind=${encodeURIComponent(currentKind)}&target_id=${encodeURIComponent(currentTarget)}`);
+        const data = await res.json();
+        if (!data.authenticated) {
+          document.getElementById("authModal").classList.remove("hidden");
           return;
         }
-        bar.textContent = others.length === 1
-          ? `@${others[0]} is typing...`
-          : `${others.map(u => "@" + u).join(", ")} are typing...`;
-      }
-
-      // Composers
-      function openModal(id) {
-        document.getElementById(id).classList.add("open");
-      }
-
-      function closeModal(id) {
-        document.getElementById(id).classList.remove("open");
-      }
-
-      function openForumComposer(existingPost = null) {
-        document.getElementById("composerTitle").textContent = existingPost ? "Edit Forum Post" : "Create New Forum / Bulletin";
-        document.getElementById("composerBody").innerHTML = `
-          <div style="display:flex; flex-direction:column; gap:10px;">
-            <input type="text" class="text-input" id="compTitle" value="${escapeHtml(existingPost ? existingPost.title : "")}" placeholder="Forum title..." />
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-              <select class="select-control" id="compBoard">
-                ${BOARDS.map(b => `<option value="${escapeHtml(b)}" ${(existingPost ? existingPost.board : state.activeBoard) === b ? "selected" : ""}>${escapeHtml(b)}</option>`).join("")}
-              </select>
-              <select class="select-control" id="compCategory">
-                ${CATEGORIES.map(c => `<option value="${escapeHtml(c)}" ${(existingPost ? existingPost.category : state.activeCategory) === c ? "selected" : ""}>${escapeHtml(c)}</option>`).join("")}
-              </select>
-            </div>
-            <textarea class="textarea-input" id="compBody" placeholder="Write your bulletin or forum body...">${escapeHtml(existingPost ? existingPost.body : "")}</textarea>
-            <div style="display:flex; justify-content:flex-end; gap:8px;">
-              <button class="ghost-btn" data-close="composerModal">Cancel</button>
-              <button class="primary-btn" id="saveForumBtn">${existingPost ? "Save Changes" : "Publish Post"}</button>
-            </div>
-          </div>
-        `;
-        openModal("composerModal");
-
-        document.getElementById("saveForumBtn").onclick = () => {
-          const title = (document.getElementById("compTitle").value || "").trim();
-          const body = (document.getElementById("compBody").value || "").trim();
-          const board = document.getElementById("compBoard").value;
-          const category = document.getElementById("compCategory").value;
-          if (!title || !body) return showToast("Title and body are required.");
-
-          if (existingPost) {
-            existingPost.title = title;
-            existingPost.body = body;
-            existingPost.board = board;
-            existingPost.category = category;
-            showToast("Updated forum post.");
-          } else {
-            state.bulletins.unshift({
-              id: "b-" + Date.now(),
-              board,
-              category,
-              title,
-              body,
-              author: state.user.username || "guest",
-              createdAt: Date.now(),
-              pinned: false,
-              replies: []
-            });
-            showToast("Published forum post.");
-          }
-          saveState();
-          syncWithBackend("bulletin", { title, body, board, category });
-          closeModal("composerModal");
-          renderCenter();
-        };
-      }
-
-      function openPollComposer() {
-        document.getElementById("composerTitle").textContent = "Create New Poll";
-        document.getElementById("composerBody").innerHTML = `
-          <div style="display:flex; flex-direction:column; gap:10px;">
-            <input type="text" class="text-input" id="pollQuestionInput" placeholder="Ask a question..." />
-            <input type="text" class="text-input" id="pollOptionsInput" placeholder="Options separated by commas (e.g. Option A, Option B, Option C)" />
-            <div style="display:flex; justify-content:flex-end; gap:8px;">
-              <button class="ghost-btn" data-close="composerModal">Cancel</button>
-              <button class="primary-btn" id="savePollBtn">Create Poll</button>
-            </div>
-          </div>
-        `;
-        openModal("composerModal");
-
-        document.getElementById("savePollBtn").onclick = () => {
-          const q = (document.getElementById("pollQuestionInput").value || "").trim();
-          const optsRaw = (document.getElementById("pollOptionsInput").value || "")
-            .split(",")
-            .map(s => s.trim())
-            .filter(Boolean);
-          if (!q || optsRaw.length < 2) return showToast("Enter a question and at least 2 comma-separated options.");
-          state.polls.unshift({
-            id: "p-" + Date.now(),
-            question: q,
-            author: state.user.username || "guest",
-            options: optsRaw.map((label, idx) => ({ id: "o-" + Date.now() + "-" + idx, label, votes: 0 })),
-            userVotedOptionId: null
+        document.getElementById("authModal").classList.add("hidden");
+        if (currentKind === "dm" || currentKind === "gc") {
+          fetch("/api/read", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ kind: currentKind, target_id: currentTarget }),
           });
-          saveState();
-          closeModal("composerModal");
-          renderLeftSidebar();
-          renderCenter();
-        };
-      }
-
-      function openGroupComposer() {
-        document.getElementById("composerTitle").textContent = "Create Group Chat";
-        document.getElementById("composerBody").innerHTML = `
-          <div style="display:flex; flex-direction:column; gap:10px;">
-            <input type="text" class="text-input" id="groupNameInput" placeholder="Group name (e.g. night-coders)" />
-            <label style="font-size:12.5px; display:flex; align-items:center; gap:8px;">
-              <input type="checkbox" id="groupPublicCheck" checked /> Public Group
-            </label>
-            <div style="display:flex; justify-content:flex-end; gap:8px;">
-              <button class="ghost-btn" data-close="composerModal">Cancel</button>
-              <button class="primary-btn" id="saveGroupBtn">Create Group</button>
-            </div>
-          </div>
-        `;
-        openModal("composerModal");
-
-        document.getElementById("saveGroupBtn").onclick = () => {
-          const rawName = (document.getElementById("groupNameInput").value || "").trim().toLowerCase().replace(/\s+/g, "-");
-          const isPublic = document.getElementById("groupPublicCheck").checked;
-          if (!rawName) return showToast("Enter a group name.");
-          if (!state.groups.some(g => g.id === rawName)) {
-            state.groups.push({ id: rawName, name: rawName, isPublic });
-            state.groupMessages[rawName] = [];
-          }
-          state.view = "group_chat";
-          state.activeGroupId = rawName;
-          saveState();
-          closeModal("composerModal");
-          renderLeftSidebar();
-          renderCenter();
-        };
-      }
-
-      // Backend Sync Helper (gracefully integrates if Flask exposes /sync or /api/sync)
-      async function syncWithBackend(eventType = "poll_sync", payload = {}) {
-        const statusText = document.getElementById("syncStatusText");
-        try {
-          const endpoint = eventType === "poll_sync" ? "/sync" : "/api/" + eventType;
-          const opts = eventType === "poll_sync"
-            ? { method: "GET" }
-            : {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...payload, username: state.user.username })
-              };
-          const res = await fetch(endpoint, opts);
-          if (res.ok) {
-            const ct = res.headers.get("content-type") || "";
-            if (ct.includes("application/json")) {
-              const data = await res.json();
-              if (Array.isArray(data.members)) state.members = data.members;
-              if (Array.isArray(data.typing)) state.typingUsers = data.typing;
-              if (data.pins && typeof data.pins === "object") {
-                state.pins = { ...state.pins, ...data.pins };
-              }
-              renderRightSidebar();
-              renderTypingBar();
-            }
-            statusText.textContent = "Synced";
-          }
-        } catch (_) {
-          statusText.textContent = "Local + Live Ready";
         }
-      }
+        renderUI(data);
+      } catch (e) {}
+    }
 
-      function restartSyncTimer() {
-        clearInterval(syncTimer);
-        const ms = Number(state.prefs.syncInterval || 0);
-        if (ms > 0) {
-          syncTimer = setInterval(() => syncWithBackend("poll_sync"), ms);
-        }
-      }
-
-      // Global Event Wiring
-      function bindEvents() {
-        document.querySelectorAll(".left-sidebar .nav-item[data-view]").forEach(btn => {
-          btn.onclick = () => {
-            state.view = btn.dataset.view;
-            if (btn.dataset.board) {
-              state.activeBoard = btn.dataset.board;
-              if (btn.dataset.board !== "International (Main)" && CATEGORIES.includes(btn.dataset.board)) {
-                state.activeCategory = btn.dataset.board;
-              } else {
-                state.activeCategory = "International";
-              }
-            }
-            saveState();
-            renderLeftSidebar();
-            renderCenter();
-          };
-        });
-
-        document.querySelectorAll(".nav-item.locked").forEach(btn => {
-          btn.onclick = () => showToast(btn.dataset.locked + " is marked upcoming.");
-        });
-
-        document.getElementById("sidebarGroupsList").addEventListener("click", (e) => {
-          const btn = e.target.closest("[data-open-group]");
-          if (!btn) return;
-          state.view = "group_chat";
-          state.activeGroupId = btn.dataset.openGroup;
-          saveState();
-          renderLeftSidebar();
-          renderCenter();
-        });
-
-        document.getElementById("sidebarDmsList").addEventListener("click", (e) => {
-          const btn = e.target.closest("[data-open-dm]");
-          if (!btn) return;
-          state.view = "dm";
-          state.activeDmUser = btn.dataset.openDm;
-          saveState();
-          renderLeftSidebar();
-          renderCenter();
-        });
-
-        document.getElementById("centerStage").addEventListener("click", (e) => {
-          const actionBtn = e.target.closest("[data-action]");
-          if (!actionBtn) return;
-          const action = actionBtn.dataset.action;
-          const id = actionBtn.dataset.id;
-          const post = state.bulletins.find(p => p.id === id);
-          if (!post) return;
-
-          if (action === "delete-post") {
-            state.bulletins = state.bulletins.filter(p => p.id !== id);
-            saveState();
-            renderCenter();
-            showToast("Deleted forum post.");
-          } else if (action === "pin-post") {
-            post.pinned = !post.pinned;
-            saveState();
-            renderCenter();
-          } else if (action === "edit-post") {
-            openForumComposer(post);
-          } else if (action === "send-reply") {
-            const inp = document.querySelector(`[data-reply-input="${id}"]`);
-            const text = (inp && inp.value || "").trim();
-            if (!text) return;
-            post.replies = post.replies || [];
-            post.replies.push({
-              id: "r-" + Date.now(),
-              author: state.user.username || "guest",
-              text,
-              createdAt: Date.now()
-            });
-            saveState();
-            renderCenter();
-          } else if (action === "toggle-reply") {
-            const inp = document.querySelector(`[data-reply-input="${id}"]`);
-            if (inp) inp.focus();
-          }
-        });
-
-        document.getElementById("quickComposeBtn").onclick = () => {
-          if (state.view === "polls") openPollComposer();
-          else if (state.view === "group_chat") openGroupComposer();
-          else openForumComposer();
-        };
-
-        document.getElementById("createGroupBtn").onclick = openGroupComposer;
-
-        document.getElementById("openAppearanceBtn").onclick = () => openModal("appearanceModal");
-        document.getElementById("openSettingsBtn").onclick = () => {
-          document.getElementById("accountNameInput").value = state.user.name || "";
-          document.getElementById("accountHandleInput").value = state.user.username || "";
-          openModal("settingsModal");
-        };
-        document.getElementById("quickAccountBtn").onclick = () => {
-          document.getElementById("openSettingsBtn").click();
-        };
-
-        document.getElementById("quickStatusSelect").onchange = (e) => {
-          state.user.status = e.target.value;
-          saveState();
-          renderRightSidebar();
-        };
-
-        document.querySelectorAll("[data-close]").forEach(btn => {
-          btn.onclick = () => closeModal(btn.dataset.close);
-        });
-
-        document.querySelectorAll(".modal-backdrop").forEach(backdrop => {
-          backdrop.onclick = (e) => {
-            if (e.target === backdrop) backdrop.classList.remove("open");
-          };
-        });
-
-        // Appearance bindings
-        document.getElementById("themeSelect").onchange = (e) => {
-          state.prefs.theme = e.target.value;
-          saveState();
-          applyPrefs();
-        };
-        document.getElementById("toggleSnow").onchange = (e) => {
-          state.prefs.snow = e.target.checked;
-          saveState();
-          applyPrefs();
-        };
-        document.getElementById("toggleLights").onchange = (e) => {
-          state.prefs.lights = e.target.checked;
-          saveState();
-          applyPrefs();
-        };
-        document.getElementById("toggleGlow").onchange = (e) => {
-          state.prefs.glow = e.target.checked;
-          saveState();
-          applyPrefs();
-        };
-        document.getElementById("toggleBlur").onchange = (e) => {
-          state.prefs.blur = e.target.checked;
-          saveState();
-          applyPrefs();
-        };
-        document.getElementById("toggleCompact").onchange = (e) => {
-          state.prefs.compact = e.target.checked;
-          saveState();
-          applyPrefs();
-        };
-        document.getElementById("toggleHideRight").onchange = (e) => {
-          state.prefs.hideRight = e.target.checked;
-          saveState();
-          applyPrefs();
-        };
-
-        // Settings bindings
-        document.getElementById("saveAccountBtn").onclick = () => {
-          const name = (document.getElementById("accountNameInput").value || "").trim() || "Guest";
-          const handle = (document.getElementById("accountHandleInput").value || "").trim().replace(/^@+/, "").replace(/\s+/g, "") || "guest";
-          state.user.name = name;
-          state.user.username = handle;
-          state.user.isGuest = handle === "guest";
-          if (!state.user.isGuest && state.user.status === "Browsing") {
-            state.user.status = "Online";
-          }
-          saveState();
-          renderRightSidebar();
-          closeModal("settingsModal");
-          showToast("Saved profile @" + handle);
-        };
-
-        document.getElementById("signOutGuestBtn").onclick = () => {
-          state.user = { name: "Guest", username: "guest", status: "Browsing", isGuest: true };
-          saveState();
-          renderRightSidebar();
-          closeModal("settingsModal");
-          showToast("Switched to Guest.");
-        };
-
-        document.getElementById("syncIntervalSelect").onchange = (e) => {
-          state.prefs.syncInterval = Number(e.target.value);
-          saveState();
-          restartSyncTimer();
-        };
-
-        document.getElementById("enterToSendCheck").onchange = (e) => {
-          state.prefs.enterToSend = e.target.checked;
-          saveState();
-        };
-
-        document.getElementById("resetLocalDataBtn").onclick = () => {
-          localStorage.removeItem(STORAGE_KEY);
-          state = structuredClone(defaultState);
-          saveState();
-          applyPrefs();
-          renderLeftSidebar();
-          renderRightSidebar();
-          renderCenter();
-          closeModal("settingsModal");
-          showToast("Reset local cache.");
-        };
-      }
-
-      initLights();
-      initSnow();
-      bindEvents();
-      applyPrefs();
-      renderLeftSidebar();
-      renderRightSidebar();
-      renderCenter();
-      syncWithBackend("poll_sync");
-    })();
+    applySavedTheme();
+    syncNow();
+    setInterval(syncNow, 2500);
   </script>
 </body>
 </html>
