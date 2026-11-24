@@ -10,9 +10,18 @@ from typing import Any
 from flask import Flask, jsonify, render_template, request, session
 from werkzeug.security import check_password_hash, generate_password_hash
 
+try:
+    import psycopg2
+except ImportError:
+    psycopg2 = None
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "schrewizium-clean-rewrite-key-2026")
 
+DEFAULT_NEON_URL = (
+    "postgresql://schrewizium_owner:npg_omq7YWvKI9Dn@ep-lively-heart-bbyfei9v-pooler.c-15.us-east-1.aws.neon.tech/schrewizium?sslmode=require&channel_binding=require"
+)
+DATABASE_URL = os.environ.get("DATABASE_URL", "").strip() or DEFAULT_NEON_URL
 DB_FILE = os.environ.get("DATABASE_PATH", "schrewizium.db")
 LEGACY_JSON_FILE = "schrewizium_state.json"
 STATE_LOCK = threading.Lock()
@@ -20,6 +29,46 @@ USERNAME_RE = re.compile(r"^[a-zA-Z0-9_.]{2,20}$")
 VALID_STATUSES = {"online", "idle", "dnd", "invisible", "offline"}
 ALLOWED_REACTIONS = {"👍", "❤️", "😂", "🔥", "👀", "🫡"}
 MAX_IMAGE_CHARS = 950_000
+
+
+def use_postgres() -> bool:
+    return bool(DATABASE_URL and psycopg2 is not None)
+
+
+def get_pg_conn():
+    url = DATABASE_URL
+    if url.startswith("postgres://"):
+        url = "postgresql://" + url[len("postgres://") :]
+    return psycopg2.connect(url)
+
+
+def init_db() -> None:
+    if use_postgres():
+        with get_pg_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS app_state (
+                        id INTEGER PRIMARY KEY CHECK (id = 1),
+                        payload TEXT NOT NULL,
+                        updated_at DOUBLE PRECISION NOT NULL
+                    )
+                    """
+                )
+            conn.commit()
+        return
+
+    with sqlite3.connect(DB_FILE) as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS app_state (
+                id INTEGER PRIMARY KEY CHECK (id = 1),
+                payload TEXT NOT NULL,
+                updated_at REAL NOT NULL
+            )
+            """
+        )
+        conn.commit()
 
 
 def make_general_gc() -> dict[str, Any]:
@@ -48,20 +97,6 @@ def default_state() -> dict[str, Any]:
     }
 
 
-def init_db() -> None:
-    with sqlite3.connect(DB_FILE) as conn:
-        conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS app_state (
-                id INTEGER PRIMARY KEY CHECK (id = 1),
-                payload TEXT NOT NULL,
-                updated_at REAL NOT NULL
-            )
-            """
-        )
-        conn.commit()
-
-
 def normalize_state(loaded: dict[str, Any]) -> dict[str, Any]:
     loaded.setdefault("users", {})
     loaded.setdefault("username_map", {})
@@ -88,15 +123,23 @@ def normalize_state(loaded: dict[str, Any]) -> dict[str, Any]:
 
 def load_state() -> dict[str, Any]:
     init_db()
-    with sqlite3.connect(DB_FILE) as conn:
-        row = conn.execute("SELECT payload FROM app_state WHERE id = 1").fetchone()
-        if row and row[0]:
-            try:
-                loaded = json.loads(row[0])
-                if isinstance(loaded, dict):
-                    return normalize_state(loaded)
-            except json.JSONDecodeError:
-                pass
+    row = None
+    if use_postgres():
+        with get_pg_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT payload FROM app_state WHERE id = 1")
+                row = cur.fetchone()
+    else:
+        with sqlite3.connect(DB_FILE) as conn:
+            row = conn.execute("SELECT payload FROM app_state WHERE id = 1").fetchone()
+
+    if row and row[0]:
+        try:
+            loaded = json.loads(row[0])
+            if isinstance(loaded, dict):
+                return normalize_state(loaded)
+        except json.JSONDecodeError:
+            pass
 
     if os.path.exists(LEGACY_JSON_FILE):
         try:
@@ -117,6 +160,23 @@ def load_state() -> dict[str, Any]:
 def save_state(state: dict[str, Any]) -> None:
     init_db()
     serialized = json.dumps(state)
+    now = time.time()
+    if use_postgres():
+        with get_pg_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO app_state (id, payload, updated_at)
+                    VALUES (1, %s, %s)
+                    ON CONFLICT (id) DO UPDATE SET
+                        payload = EXCLUDED.payload,
+                        updated_at = EXCLUDED.updated_at
+                    """,
+                    (serialized, now),
+                )
+            conn.commit()
+        return
+
     with sqlite3.connect(DB_FILE) as conn:
         conn.execute(
             """
@@ -126,7 +186,7 @@ def save_state(state: dict[str, Any]) -> None:
                 payload = excluded.payload,
                 updated_at = excluded.updated_at
             """,
-            (serialized, time.time()),
+            (serialized, now),
         )
         conn.commit()
 
