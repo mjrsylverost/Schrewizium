@@ -18,6 +18,8 @@ LEGACY_JSON_FILE = "schrewizium_state.json"
 STATE_LOCK = threading.Lock()
 USERNAME_RE = re.compile(r"^[a-zA-Z0-9_.]{2,20}$")
 VALID_STATUSES = {"online", "idle", "dnd", "invisible", "offline"}
+ALLOWED_REACTIONS = {"👍", "❤️", "😂", "🔥", "👀", "🫡"}
+MAX_IMAGE_CHARS = 950_000
 
 
 def make_general_gc() -> dict[str, Any]:
@@ -30,6 +32,7 @@ def make_general_gc() -> dict[str, Any]:
         "messages": [],
         "pins": [],
         "mention_unread": {},
+        "last_seen_ts": {},
         "typing": {},
     }
 
@@ -68,6 +71,18 @@ def normalize_state(loaded: dict[str, Any]) -> dict[str, Any]:
     loaded.setdefault("polls", [])
     if "gc_general" not in loaded["gcs"]:
         loaded["gcs"]["gc_general"] = make_general_gc()
+    for room in loaded["gcs"].values():
+        room.setdefault("last_seen_ts", {})
+        room.setdefault("mention_unread", {})
+        for msg in room.get("messages", []):
+            msg.setdefault("reactions", {})
+            msg.setdefault("image", "")
+    for dm_room in loaded["dms"].values():
+        dm_room.setdefault("last_seen_ts", {})
+        dm_room.setdefault("unread_for", {})
+        for msg in dm_room.get("messages", []):
+            msg.setdefault("reactions", {})
+            msg.setdefault("image", "")
     return loaded
 
 
@@ -122,6 +137,21 @@ def clean_username(raw: Any) -> str:
     return re.sub(r"\s+", "", str(raw).strip())
 
 
+def sanitize_image_src(raw: Any) -> str:
+    src = str(raw or "").strip()
+    if not src:
+        return ""
+    if len(src) > MAX_IMAGE_CHARS:
+        return ""
+    if src.startswith("data:image/"):
+        if ";base64," in src:
+            return src
+        return ""
+    if src.startswith("https://") or src.startswith("http://"):
+        return src[:500]
+    return ""
+
+
 def dm_key(user_a: str, user_b: str) -> str:
     first, second = sorted([user_a, user_b])
     return f"dm_{first}_{second}"
@@ -157,6 +187,36 @@ def resolve_room(
         if room and (room.get("is_public") or uid in room.get("members", [])):
             return room
     return None
+
+
+def latest_incoming_ts(room: dict[str, Any], uid: str) -> int:
+    latest = 0
+    for msg in room.get("messages", []):
+        if msg.get("author_id") != uid:
+            ts = int(msg.get("ts", 0) or 0)
+            if ts > latest:
+                latest = ts
+    return latest
+
+
+def has_unseen_messages(room: dict[str, Any] | None, uid: str) -> bool:
+    if not room:
+        return False
+    latest = latest_incoming_ts(room, uid)
+    if latest == 0:
+        return False
+    seen = int(room.get("last_seen_ts", {}).get(uid, 0) or 0)
+    return latest > seen
+
+
+def mark_room_seen(room: dict[str, Any] | None, uid: str) -> None:
+    if not room:
+        return
+    latest = latest_incoming_ts(room, uid)
+    now_ms = int(time.time() * 1000)
+    seen_map = room.setdefault("last_seen_ts", {})
+    prev_seen = int(seen_map.get(uid, 0) or 0)
+    seen_map[uid] = max(prev_seen, latest, now_ms)
 
 
 @app.route("/")
@@ -210,7 +270,6 @@ def auth():
                 if not check_password_hash(stored_hash, password):
                     return jsonify({"error": "Incorrect password."}), 401
             else:
-                # Claim legacy passwordless account on first password login
                 user["password_hash"] = generate_password_hash(password)
         else:
             if mode == "login":
@@ -416,6 +475,7 @@ def respond_friend_request():
                     "members": [me["id"], tid],
                     "messages": [],
                     "unread_for": {me["id"]: False, tid: False},
+                    "last_seen_ts": {me["id"]: int(time.time() * 1000), tid: int(time.time() * 1000)},
                     "typing": {},
                 }
         elif action == "remove":
@@ -459,6 +519,7 @@ def create_gc():
             "messages": [],
             "pins": [],
             "mention_unread": {},
+            "last_seen_ts": {me["id"]: int(time.time() * 1000)},
             "typing": {},
         }
         save_state(state)
@@ -505,10 +566,12 @@ def mark_read():
             room = state["dms"].get(dm_key(me["id"], target_id))
             if room:
                 room.setdefault("unread_for", {})[me["id"]] = False
+                mark_room_seen(room, me["id"])
         elif kind == "gc" and target_id:
             room = state["gcs"].get(target_id)
             if room:
                 room.setdefault("mention_unread", {})[me["id"]] = False
+                mark_room_seen(room, me["id"])
 
         save_state(state)
         return jsonify({"ok": True})
@@ -520,10 +583,13 @@ def send_message():
     kind = payload.get("kind")
     target_id = payload.get("target_id")
     text = str(payload.get("text", "")).strip()
+    image = sanitize_image_src(payload.get("image", ""))
     reply_to_id = payload.get("reply_to")
 
-    if not text:
-        return jsonify({"error": "Message cannot be empty."}), 400
+    if not text and not image:
+        return jsonify({"error": "Message or image is required."}), 400
+    if payload.get("image") and not image:
+        return jsonify({"error": "Image is too large or unsupported."}), 400
 
     with STATE_LOCK:
         state = load_state()
@@ -541,6 +607,7 @@ def send_message():
                     "members": [me["id"], target_id],
                     "messages": [],
                     "unread_for": {me["id"]: False, target_id: False},
+                    "last_seen_ts": {},
                     "typing": {},
                 }
             room = state["dms"][key]
@@ -583,20 +650,26 @@ def send_message():
                 if kind == "gc":
                     room.setdefault("mention_unread", {})[member_id] = True
 
+        msg_ts = int(time.time() * 1000)
         message = {
             "id": f"m_{uuid.uuid4().hex[:12]}",
             "author_id": me["id"],
             "author_username": me["username"],
             "author_avatar": me.get("avatar", ""),
             "text": text[:2000],
-            "ts": int(time.time() * 1000),
+            "image": image,
+            "ts": msg_ts,
             "edited": False,
             "reply_to": reply_snapshot,
             "mentions": mentioned_ids,
+            "reactions": {},
         }
 
         room["messages"].append(message)
         room["messages"] = room["messages"][-300:]
+        room.setdefault("last_seen_ts", {})[me["id"]] = max(
+            int(room.get("last_seen_ts", {}).get(me["id"], 0) or 0), msg_ts
+        )
         room.setdefault("typing", {}).pop(me["id"], None)
         save_state(state)
         return jsonify({"message": message})
@@ -658,6 +731,43 @@ def delete_message():
                 room["messages"].pop(idx)
                 save_state(state)
                 return jsonify({"ok": True})
+
+        return jsonify({"error": "Message not found."}), 404
+
+
+@app.route("/api/messages/react", methods=["POST"])
+def react_message():
+    payload = request.get_json(silent=True) or {}
+    kind = payload.get("kind")
+    target_id = payload.get("target_id")
+    msg_id = payload.get("msg_id")
+    emoji = str(payload.get("emoji", "")).strip()
+
+    if emoji not in ALLOWED_REACTIONS:
+        return jsonify({"error": "Unsupported reaction."}), 400
+
+    with STATE_LOCK:
+        state = load_state()
+        me = current_user(state)
+        if not me:
+            return jsonify({"error": "Not logged in."}), 401
+
+        room = resolve_room(state, me["id"], kind, target_id)
+        if not room:
+            return jsonify({"error": "Chat not found."}), 404
+
+        for msg in room["messages"]:
+            if msg["id"] == msg_id:
+                reactions = msg.setdefault("reactions", {})
+                voters = reactions.setdefault(emoji, [])
+                if me["id"] in voters:
+                    voters.remove(me["id"])
+                    if not voters:
+                        reactions.pop(emoji, None)
+                else:
+                    voters.append(me["id"])
+                save_state(state)
+                return jsonify({"reactions": reactions})
 
         return jsonify({"error": "Message not found."}), 404
 
@@ -802,7 +912,10 @@ def sync():
                 continue
             seen_dm_users.add(fid)
             dm_room = state["dms"].get(dm_key(me["id"], fid))
-            unread = bool(dm_room.get("unread_for", {}).get(me["id"], False)) if dm_room else False
+            is_current_dm = kind == "dm" and target_id == fid
+            if is_current_dm and dm_room:
+                mark_room_seen(dm_room, me["id"])
+            unread = False if is_current_dm else has_unseen_messages(dm_room, me["id"])
             dm_list.append({"user": users_dir[fid], "unread": unread})
 
         for dm_room in state["dms"].values():
@@ -811,17 +924,26 @@ def sync():
                 if other_ids:
                     other_id = other_ids[0]
                     if other_id not in seen_dm_users and other_id in users_dir:
-                        unread = bool(dm_room.get("unread_for", {}).get(me["id"], False))
+                        is_current_dm = kind == "dm" and target_id == other_id
+                        if is_current_dm:
+                            mark_room_seen(dm_room, me["id"])
+                        unread = False if is_current_dm else has_unseen_messages(dm_room, me["id"])
                         dm_list.append({"user": users_dir[other_id], "unread": unread})
 
         gc_list = []
         for room in state["gcs"].values():
             if room.get("is_public") or me["id"] in room["members"]:
+                is_current_gc = kind == "gc" and target_id == room["id"]
+                if is_current_gc:
+                    mark_room_seen(room, me["id"])
+                    room.setdefault("mention_unread", {})[me["id"]] = False
+                unread = False if is_current_gc else has_unseen_messages(room, me["id"])
                 gc_list.append(
                     {
                         "id": room["id"],
                         "name": room["name"],
                         "is_public": bool(room.get("is_public", False)),
+                        "unread": unread,
                         "mention_unread": bool(room.get("mention_unread", {}).get(me["id"], False)),
                         "member_count": len(room["members"]),
                     }
@@ -845,6 +967,7 @@ def sync():
                 if uid != me["id"] and (now - last_ts) < 3.0 and uid in users_dir:
                     typing_users.append(users_dir[uid]["username"])
 
+        save_state(state)
         return jsonify(
             {
                 "authenticated": True,
