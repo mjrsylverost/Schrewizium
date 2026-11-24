@@ -1,20 +1,23 @@
 import json
 import os
 import re
+import sqlite3
 import threading
 import time
 import uuid
 from typing import Any
 
 from flask import Flask, jsonify, render_template, request, session
+from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "schrewizium-clean-rewrite-key-2026")
 
-DATA_FILE = "schrewizium_state.json"
+DB_FILE = os.environ.get("DATABASE_PATH", "schrewizium.db")
+LEGACY_JSON_FILE = "schrewizium_state.json"
 STATE_LOCK = threading.Lock()
 USERNAME_RE = re.compile(r"^[a-zA-Z0-9_.]{2,20}$")
-VALID_STATUSES = {"online", "idle", "dnd", "offline"}
+VALID_STATUSES = {"online", "idle", "dnd", "invisible", "offline"}
 
 
 def make_general_gc() -> dict[str, Any]:
@@ -42,19 +45,21 @@ def default_state() -> dict[str, Any]:
     }
 
 
-def load_state() -> dict[str, Any]:
-    if not os.path.exists(DATA_FILE):
-        state = default_state()
-        save_state(state)
-        return state
-    try:
-        with open(DATA_FILE, "r", encoding="utf-8") as handle:
-            loaded = json.load(handle)
-        if not isinstance(loaded, dict):
-            return default_state()
-    except (OSError, json.JSONDecodeError):
-        return default_state()
+def init_db() -> None:
+    with sqlite3.connect(DB_FILE) as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS app_state (
+                id INTEGER PRIMARY KEY CHECK (id = 1),
+                payload TEXT NOT NULL,
+                updated_at REAL NOT NULL
+            )
+            """
+        )
+        conn.commit()
 
+
+def normalize_state(loaded: dict[str, Any]) -> dict[str, Any]:
     loaded.setdefault("users", {})
     loaded.setdefault("username_map", {})
     loaded.setdefault("dms", {})
@@ -66,11 +71,49 @@ def load_state() -> dict[str, Any]:
     return loaded
 
 
+def load_state() -> dict[str, Any]:
+    init_db()
+    with sqlite3.connect(DB_FILE) as conn:
+        row = conn.execute("SELECT payload FROM app_state WHERE id = 1").fetchone()
+        if row and row[0]:
+            try:
+                loaded = json.loads(row[0])
+                if isinstance(loaded, dict):
+                    return normalize_state(loaded)
+            except json.JSONDecodeError:
+                pass
+
+    if os.path.exists(LEGACY_JSON_FILE):
+        try:
+            with open(LEGACY_JSON_FILE, "r", encoding="utf-8") as handle:
+                loaded = json.load(handle)
+            if isinstance(loaded, dict):
+                state = normalize_state(loaded)
+                save_state(state)
+                return state
+        except (OSError, json.JSONDecodeError):
+            pass
+
+    state = default_state()
+    save_state(state)
+    return state
+
+
 def save_state(state: dict[str, Any]) -> None:
-    temp_path = f"{DATA_FILE}.tmp"
-    with open(temp_path, "w", encoding="utf-8") as handle:
-        json.dump(state, handle, indent=2)
-    os.replace(temp_path, DATA_FILE)
+    init_db()
+    serialized = json.dumps(state)
+    with sqlite3.connect(DB_FILE) as conn:
+        conn.execute(
+            """
+            INSERT INTO app_state (id, payload, updated_at)
+            VALUES (1, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+                payload = excluded.payload,
+                updated_at = excluded.updated_at
+            """,
+            (serialized, time.time()),
+        )
+        conn.commit()
 
 
 def clean_username(raw: Any) -> str:
@@ -125,7 +168,9 @@ def index() -> str:
 def auth():
     payload = request.get_json(silent=True) or {}
     username = clean_username(payload.get("username", ""))
+    password = str(payload.get("password", ""))
     mode = str(payload.get("mode", "register")).strip().lower()
+
     if not USERNAME_RE.match(username):
         return (
             jsonify(
@@ -138,6 +183,9 @@ def auth():
             ),
             400,
         )
+
+    if len(password) < 4:
+        return jsonify({"error": "Password must be at least 4 characters."}), 400
 
     lower_key = username.lower()
     with STATE_LOCK:
@@ -157,6 +205,13 @@ def auth():
                 )
             uid = state["username_map"][lower_key]
             user = state["users"][uid]
+            stored_hash = user.get("password_hash", "")
+            if stored_hash:
+                if not check_password_hash(stored_hash, password):
+                    return jsonify({"error": "Incorrect password."}), 401
+            else:
+                # Claim legacy passwordless account on first password login
+                user["password_hash"] = generate_password_hash(password)
         else:
             if mode == "login":
                 return jsonify({"error": f"No account found for '{username}'."}), 404
@@ -164,6 +219,7 @@ def auth():
             user = {
                 "id": uid,
                 "username": username,
+                "password_hash": generate_password_hash(password),
                 "status": "online",
                 "custom_status": str(payload.get("custom_status", "")).strip()[:60],
                 "avatar": str(payload.get("avatar", "")).strip()[:300],
@@ -192,6 +248,29 @@ def logout():
     return jsonify({"ok": True})
 
 
+@app.route("/api/backup/export")
+def export_backup():
+    with STATE_LOCK:
+        state = load_state()
+        me = current_user(state)
+        if not me:
+            return jsonify({"error": "Not logged in."}), 401
+        return jsonify({"backup": state, "exported_at": int(time.time() * 1000)})
+
+
+@app.route("/api/backup/import", methods=["POST"])
+def import_backup():
+    payload = request.get_json(silent=True) or {}
+    backup = payload.get("backup")
+    if not isinstance(backup, dict) or "users" not in backup or "username_map" not in backup:
+        return jsonify({"error": "Invalid backup JSON format."}), 400
+
+    with STATE_LOCK:
+        restored = normalize_state(backup)
+        save_state(restored)
+        return jsonify({"ok": True})
+
+
 @app.route("/api/profile", methods=["POST"])
 def update_profile():
     payload = request.get_json(silent=True) or {}
@@ -212,6 +291,12 @@ def update_profile():
             del state["username_map"][me["username"].lower()]
             state["username_map"][new_key] = me["id"]
             me["username"] = new_username
+
+        new_password = str(payload.get("new_password", ""))
+        if new_password:
+            if len(new_password) < 4:
+                return jsonify({"error": "New password must be at least 4 characters."}), 400
+            me["password_hash"] = generate_password_hash(new_password)
 
         status = payload.get("status", me.get("status", "online"))
         if status in VALID_STATUSES:
@@ -252,7 +337,7 @@ def search_users():
                 entry["relation"] = relation
                 matches.append(entry)
 
-        return jsonify({"results": matches[:15]})
+        return jsonify({"results": matches[:25]})
 
 
 @app.route("/api/friends/request", methods=["POST"])
@@ -288,7 +373,7 @@ def send_friend_request():
             if tid not in me["outgoing"]:
                 me["outgoing"].append(tid)
             if me["id"] not in target["incoming"]:
-                target["incoming"].append(tid)
+                target["incoming"].append(me["id"])
 
         save_state(state)
         return jsonify({"ok": True})
@@ -312,8 +397,12 @@ def respond_friend_request():
         tid = target["id"]
         if tid in me["incoming"]:
             me["incoming"].remove(tid)
+        if tid in me["outgoing"]:
+            me["outgoing"].remove(tid)
         if me["id"] in target["outgoing"]:
             target["outgoing"].remove(me["id"])
+        if me["id"] in target["incoming"]:
+            target["incoming"].remove(me["id"])
 
         if action == "accept":
             if tid not in me["friends"]:
@@ -329,6 +418,11 @@ def respond_friend_request():
                     "unread_for": {me["id"]: False, tid: False},
                     "typing": {},
                 }
+        elif action == "remove":
+            if tid in me["friends"]:
+                me["friends"].remove(tid)
+            if me["id"] in target["friends"]:
+                target["friends"].remove(me["id"])
 
         save_state(state)
         return jsonify({"ok": True})
@@ -338,7 +432,7 @@ def respond_friend_request():
 def create_gc():
     payload = request.get_json(silent=True) or {}
     name = re.sub(r"\s+", "-", str(payload.get("name", "")).strip())[:30]
-    is_public = bool(payload.get("is_public", False))
+    is_public = bool(payload.get("is_public", True))
     requested_members = payload.get("members", [])
     if not name:
         return jsonify({"error": "Group chat name is required."}), 400
@@ -470,23 +564,23 @@ def send_message():
                     reply_snapshot = {
                         "id": existing["id"],
                         "author_username": existing["author_username"],
-                        "text": existing["text"][:90],
+                        "text": existing["text"][:140],
                     }
                     break
 
         mentioned_ids = []
-        if kind == "gc":
-            mentioned_names = {
-                token.lower() for token in re.findall(r"@([a-zA-Z0-9_.]{2,20})", text)
-            }
-            for member_id in room["members"]:
-                member_user = state["users"].get(member_id)
-                if (
-                    member_user
-                    and member_user["username"].lower() in mentioned_names
-                    and member_id != me["id"]
-                ):
-                    mentioned_ids.append(member_id)
+        mentioned_names = {
+            token.lower() for token in re.findall(r"@([a-zA-Z0-9_.]{2,20})", text)
+        }
+        for member_id in room["members"]:
+            member_user = state["users"].get(member_id)
+            if (
+                member_user
+                and member_user["username"].lower() in mentioned_names
+                and member_id != me["id"]
+            ):
+                mentioned_ids.append(member_id)
+                if kind == "gc":
                     room.setdefault("mention_unread", {})[member_id] = True
 
         message = {
@@ -562,42 +656,10 @@ def delete_message():
                 if msg["author_id"] != me["id"]:
                     return jsonify({"error": "Only the message author can delete it."}), 403
                 room["messages"].pop(idx)
-                if "pins" in room and msg_id in room["pins"]:
-                    room["pins"].remove(msg_id)
                 save_state(state)
                 return jsonify({"ok": True})
 
         return jsonify({"error": "Message not found."}), 404
-
-
-@app.route("/api/gcs/pin", methods=["POST"])
-def toggle_pin():
-    payload = request.get_json(silent=True) or {}
-    gc_id = payload.get("gc_id")
-    msg_id = payload.get("msg_id")
-
-    with STATE_LOCK:
-        state = load_state()
-        me = current_user(state)
-        if not me:
-            return jsonify({"error": "Not logged in."}), 401
-
-        room = state["gcs"].get(gc_id) if gc_id else None
-        if not room:
-            return jsonify({"error": "Group chat not found."}), 404
-        if room.get("is_public"):
-            return jsonify({"error": "Pinning is disabled on public group chats."}), 403
-        if me["id"] not in room["members"]:
-            return jsonify({"error": "Not a member of this group chat."}), 403
-
-        pins = room.setdefault("pins", [])
-        if msg_id in pins:
-            pins.remove(msg_id)
-        elif any(m["id"] == msg_id for m in room["messages"]):
-            pins.append(msg_id)
-
-        save_state(state)
-        return jsonify({"ok": True, "pins": pins})
 
 
 @app.route("/api/bulletin/post", methods=["POST"])
@@ -767,7 +829,6 @@ def sync():
 
         active_messages = []
         active_members = []
-        active_pins = []
         typing_users = []
         is_public = False
 
@@ -777,8 +838,6 @@ def sync():
         elif kind == "gc" and room:
             is_public = bool(room.get("is_public", False))
             active_members = [users_dir[mid] for mid in room["members"] if mid in users_dir]
-            pin_ids = set(room.get("pins", []))
-            active_pins = [m for m in room["messages"] if m["id"] in pin_ids]
 
         if room:
             active_messages = room.get("messages", [])
@@ -804,7 +863,6 @@ def sync():
                     "is_public": is_public,
                     "messages": active_messages,
                     "members": active_members,
-                    "pins": active_pins,
                     "typing": typing_users,
                 },
             }

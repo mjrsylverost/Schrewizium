@@ -25,6 +25,7 @@
       --offline: #80848e;
       --mention-bg: rgba(88, 101, 242, 0.16);
       --reply-bar: rgba(242, 243, 245, 0.06);
+      --flash-bg: rgba(88, 101, 242, 0.35);
     }
     [data-theme="light"] {
       --bg-rail: #e3e5e8;
@@ -46,6 +47,7 @@
       --offline: #747f8d;
       --mention-bg: rgba(88, 101, 242, 0.14);
       --reply-bar: rgba(6, 6, 7, 0.05);
+      --flash-bg: rgba(88, 101, 242, 0.25);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Inter, system-ui, sans-serif; }
     html, body { width: 100vw; height: 100vh; overflow: hidden; background: var(--bg-main); color: var(--text-main); }
@@ -69,7 +71,7 @@
     }
     .nav-item {
       display: flex; align-items: center; justify-content: space-between; padding: 8px 10px;
-      border-radius: 6px; color: var(--text-muted); font-size: 14px; font-weight: 500;
+      border-radius: 6px; color: var(--text-muted); font-size: 14px; font-weight: 500; cursor: pointer;
     }
     .nav-item:hover { background: var(--bg-hover); color: var(--text-main); }
     .nav-item.active { background: var(--bg-active); color: var(--text-main); font-weight: 600; }
@@ -91,12 +93,12 @@
     .status-idle { background: var(--idle); }
     .status-dnd { background: var(--dnd); }
     .status-invisible, .status-offline { background: var(--offline); }
-    .main-area { display: flex; flex-direction: column; height: 100vh; background: var(--bg-main); min-width: 0; }
+    .main-area { display: flex; flex-direction: column; height: 100vh; background: var(--bg-main); min-width: 0; position: relative; }
     .top-header {
       height: 52px; border-bottom: 1px solid var(--border); padding: 0 18px;
       display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
     }
-    .content-scroll { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 6px; }
+    .content-scroll { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 8px; }
     .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
     .row { display: flex; gap: 8px; align-items: center; }
     .btn-primary { background: var(--accent); color: #fff; padding: 9px 14px; }
@@ -106,14 +108,15 @@
     .err-text { color: var(--danger); font-size: 13px; font-weight: 600; margin-top: 6px; }
     .ok-text { color: var(--success); font-size: 13px; font-weight: 600; margin-top: 6px; }
     .msg-row {
-      position: relative; display: flex; gap: 10px; padding: 6px 10px; border-radius: 6px;
+      position: relative; display: flex; gap: 10px; padding: 6px 10px; border-radius: 6px; transition: background 0.3s;
     }
     .msg-row:hover { background: var(--bg-hover); }
     .msg-row.mentioned { background: var(--mention-bg); border-left: 3px solid var(--accent); }
+    .msg-row.flash-highlight { background: var(--flash-bg) !important; }
     .msg-actions {
       position: absolute; top: -10px; right: 10px; display: none; gap: 4px;
       background: var(--bg-sidebar); border: 1px solid var(--border); border-radius: 6px; padding: 2px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 5;
     }
     .msg-row:hover .msg-actions { display: flex; }
     .msg-act-btn {
@@ -123,9 +126,10 @@
     .msg-act-btn.del:hover { color: var(--danger); }
     .reply-quote {
       display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted);
-      background: var(--reply-bar); border-left: 2px solid var(--accent); padding: 3px 8px;
-      border-radius: 4px; margin-bottom: 4px; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+      background: var(--reply-bar); border-left: 2px solid var(--accent); padding: 4px 8px;
+      border-radius: 4px; margin-bottom: 4px; cursor: pointer; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
     }
+    .reply-quote:hover { color: var(--text-main); background: var(--bg-hover); }
     .msg-body { flex: 1; min-width: 0; }
     .msg-meta { display: flex; align-items: baseline; gap: 8px; font-size: 13px; }
     .msg-author { font-weight: 700; cursor: pointer; }
@@ -137,13 +141,24 @@
       background: rgba(88, 101, 242, 0.25); color: #c9d0ff; padding: 0 4px; border-radius: 3px; font-weight: 600;
     }
     [data-theme="light"] .mention-pill { color: #3c47c4; }
-    .composer-wrap { border-top: 1px solid var(--border); padding: 10px 16px 12px; flex-shrink: 0; }
+    .composer-wrap { border-top: 1px solid var(--border); padding: 10px 16px 12px; flex-shrink: 0; position: relative; }
     .composer-banner {
       display: flex; align-items: center; justify-content: space-between;
       background: var(--bg-sidebar); border: 1px solid var(--border); border-bottom: none;
       border-radius: 8px 8px 0 0; padding: 6px 12px; font-size: 12px; color: var(--text-muted);
     }
     .chat-composer { display: flex; gap: 8px; }
+    .mention-popup {
+      position: absolute; bottom: calc(100% + 4px); left: 16px; right: 16px; max-height: 210px;
+      overflow-y: auto; background: var(--bg-sidebar); border: 1px solid var(--border);
+      border-radius: 8px; box-shadow: 0 10px 28px rgba(0,0,0,0.45); z-index: 30; padding: 4px;
+    }
+    .mention-item {
+      display: flex; align-items: center; justify-content: space-between; padding: 7px 10px;
+      border-radius: 6px; cursor: pointer; font-size: 13px;
+    }
+    .mention-item:hover, .mention-item.selected { background: var(--accent); color: #fff; }
+    .mention-item.selected span, .mention-item:hover span { color: rgba(255,255,255,0.85) !important; }
     .typing-bar { font-size: 12px; color: var(--text-muted); padding: 0 18px 6px; min-height: 20px; }
     .right-panel { background: var(--bg-sidebar); border-left: 1px solid var(--border); height: 100vh; overflow-y: auto; padding: 14px; }
     .modal-backdrop {
@@ -151,10 +166,21 @@
       align-items: center; justify-content: center; z-index: 50;
     }
     .modal-card {
-      width: 440px; max-width: 94vw; background: var(--bg-sidebar); border: 1px solid var(--border);
-      border-radius: 12px; overflow: hidden; box-shadow: 0 16px 40px rgba(0,0,0,0.45);
+      width: 460px; max-width: 94vw; max-height: 92vh; overflow-y: auto; background: var(--bg-sidebar);
+      border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 16px 40px rgba(0,0,0,0.45);
     }
-    .profile-banner { height: 78px; background: #2b2d31; }
+    .profile-banner { height: 74px; background: #2b2d31; }
+    .poll-bar-wrap {
+      position: relative; overflow: hidden; border: 1px solid var(--border); border-radius: 6px;
+      padding: 8px 11px; margin-bottom: 6px; cursor: pointer; background: var(--bg-input);
+    }
+    .poll-bar-wrap:hover { border-color: var(--accent); }
+    .poll-bar-fill {
+      position: absolute; inset: 0 auto 0 0; background: rgba(88, 101, 242, 0.24); pointer-events: none;
+    }
+    .poll-bar-content {
+      position: relative; display: flex; justify-content: space-between; align-items: center; font-size: 13px;
+    }
     .hidden { display: none !important; }
     @media (max-width: 900px) {
       .app-shell { grid-template-columns: 220px 1fr; }
@@ -168,26 +194,34 @@
     <div class="modal-card" style="padding: 22px;">
       <h2 style="margin-bottom: 4px;">Welcome to Schrewizium</h2>
       <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
-        Usernames are unique and synced live across all rooms.
+        Password-protected unique usernames synced live across rooms.
       </p>
       <div class="row" style="margin-bottom: 12px;">
-        <button id="tabRegister" class="btn-primary" style="flex:1;" onclick="setAuthMode('register')">Create Username</button>
+        <button id="tabRegister" class="btn-primary" style="flex:1;" onclick="setAuthMode('register')">Create Account</button>
         <button id="tabLogin" class="btn-ghost" style="flex:1;" onclick="setAuthMode('login')">Log In</button>
       </div>
-      <label style="font-size:12px; font-weight:700; color:var(--text-muted);">USERNAME</label>
-      <input id="authUsername" style="width:100%; margin-top:4px;" placeholder="e.g. Mahtaab" oninput="validateUsernameLive(this.value, 'authError')" />
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div>
+          <label style="font-size:12px; font-weight:700; color:var(--text-muted);">USERNAME</label>
+          <input id="authUsername" style="width:100%; margin-top:4px;" placeholder="e.g. Mahtaab" oninput="validateUsernameLive(this.value, 'authError')" onkeydown="if(event.key==='Enter') submitAuth()" />
+        </div>
+        <div>
+          <label style="font-size:12px; font-weight:700; color:var(--text-muted);">PASSWORD</label>
+          <input id="authPassword" type="password" style="width:100%; margin-top:4px;" placeholder="At least 4 characters" onkeydown="if(event.key==='Enter') submitAuth()" />
+        </div>
+      </div>
       <div id="authError" class="err-text"></div>
       <button class="btn-primary" style="width:100%; margin-top:14px;" onclick="submitAuth()">Continue</button>
     </div>
   </div>
 
-  <!-- PROFILE & SETTINGS MODAL -->
+  <!-- PROFILE, SETTINGS & BACKUP MODAL -->
   <div id="profileModal" class="modal-backdrop hidden" onclick="if(event.target===this) closeProfileModal()">
     <div class="modal-card">
       <div id="profileBannerPreview" class="profile-banner"></div>
       <div style="padding: 16px;">
         <div class="row" style="justify-content: space-between; margin-bottom: 12px;">
-          <h3>Discord-Style Profile</h3>
+          <h3>Discord-Style Profile & Backup</h3>
           <button class="btn-ghost" onclick="closeProfileModal()">✕</button>
         </div>
         <div style="display:flex; flex-direction:column; gap:10px;">
@@ -195,6 +229,10 @@
             <label style="font-size:11px; font-weight:700; color:var(--text-muted);">USERNAME (UNIQUE)</label>
             <input id="profUsername" style="width:100%; margin-top:3px;" oninput="validateUsernameLive(this.value, 'profError')" />
             <div id="profError" class="err-text"></div>
+          </div>
+          <div>
+            <label style="font-size:11px; font-weight:700; color:var(--text-muted);">CHANGE PASSWORD (OPTIONAL)</label>
+            <input id="profNewPassword" type="password" style="width:100%; margin-top:3px;" placeholder="Leave blank to keep current password" />
           </div>
           <div class="row">
             <div style="flex:1;">
@@ -226,7 +264,15 @@
           </div>
           <div>
             <label style="font-size:11px; font-weight:700; color:var(--text-muted);">ABOUT ME</label>
-            <textarea id="profBio" rows="3" style="width:100%; margin-top:3px;" placeholder="Write a short bio..." maxlength="200"></textarea>
+            <textarea id="profBio" rows="2" style="width:100%; margin-top:3px;" placeholder="Write a short bio..." maxlength="200"></textarea>
+          </div>
+          <div class="card" style="padding:10px;">
+            <div style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:6px;">DATABASE BACKUP (SURVIVES RENDER REDEPLOYS)</div>
+            <div class="row">
+              <button class="btn-ghost" style="flex:1;" onclick="downloadBackup()">Download Backup JSON</button>
+              <button class="btn-ghost" style="flex:1;" onclick="document.getElementById('backupFileInput').click()">Restore Backup JSON</button>
+              <input id="backupFileInput" type="file" accept=".json" class="hidden" onchange="uploadBackup(event)" />
+            </div>
           </div>
           <div id="profSaved" class="ok-text"></div>
           <div class="row" style="justify-content: space-between; margin-top: 4px;">
@@ -234,6 +280,31 @@
             <button class="btn-primary" onclick="saveProfile()">Save Profile</button>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREATE GROUP CHAT MODAL -->
+  <div id="gcModal" class="modal-backdrop hidden" onclick="if(event.target===this) closeGCModal()">
+    <div class="modal-card" style="padding: 18px;">
+      <div class="row" style="justify-content: space-between; margin-bottom: 12px;">
+        <h3>Create Group Chat</h3>
+        <button class="btn-ghost" onclick="closeGCModal()">✕</button>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div>
+          <label style="font-size:11px; font-weight:700; color:var(--text-muted);">GROUP NAME</label>
+          <input id="gcNameInput" style="width:100%; margin-top:3px;" placeholder="e.g. squad-chat" maxlength="30" />
+        </div>
+        <label class="row" style="font-size:13px; cursor:pointer;">
+          <input id="gcPublicCheck" type="checkbox" checked onchange="toggleGCMemberPicker()" />
+          <span>Public room (everyone on Schrewizium can join)</span>
+        </label>
+        <div id="gcMemberPicker" class="hidden">
+          <div style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:4px;">SELECT FRIENDS TO ADD</div>
+          <div id="gcFriendCheckboxes" style="max-height:140px; overflow-y:auto; display:flex; flex-direction:column; gap:4px;"></div>
+        </div>
+        <button class="btn-primary" onclick="submitCreateGC()">Create Group Chat</button>
       </div>
     </div>
   </div>
@@ -255,7 +326,7 @@
 
         <div class="nav-label">
           <span>Group Chats</span>
-          <button class="btn-ghost" style="padding:2px 7px;" onclick="promptCreateGC()">+</button>
+          <button class="btn-ghost" style="padding:2px 7px;" onclick="openGCModal()">+</button>
         </div>
         <div id="gcList"></div>
 
@@ -287,6 +358,9 @@
 
       <div id="typingBar" class="typing-bar hidden"></div>
       <div id="composerWrap" class="composer-wrap hidden">
+        <!-- @ MENTION AUTOCOMPLETE POPUP -->
+        <div id="mentionPopup" class="mention-popup hidden"></div>
+
         <div id="replyBar" class="composer-banner hidden">
           <span id="replyLabel">Replying to @user</span>
           <button class="msg-act-btn" onclick="cancelReply()">✕</button>
@@ -296,7 +370,7 @@
           <button class="msg-act-btn" onclick="cancelEdit()">Cancel</button>
         </div>
         <div class="chat-composer">
-          <input id="chatInput" style="flex:1;" placeholder="Send a message... (use @username to mention)" onkeydown="handleComposerKey(event)" oninput="notifyTyping()" />
+          <input id="chatInput" style="flex:1;" placeholder="Send a message... (type @ to mention someone)" onkeydown="handleComposerKey(event)" oninput="handleComposerInput()" />
           <button id="composerSubmitBtn" class="btn-primary" onclick="submitChatAction()">Send</button>
         </div>
       </div>
@@ -316,8 +390,11 @@
     let currentTarget = "friends";
     let appState = null;
     let lastTypingSent = 0;
-    let replyingTo = null; // { id, author_username, text }
-    let editingMsg = null;  // { id, text }
+    let lastSyncSignature = "";
+    let replyingTo = null;
+    let editingMsg = null;
+    let mentionCandidates = [];
+    let mentionSelectedIdx = 0;
 
     function esc(str) {
       return String(str || "")
@@ -384,13 +461,20 @@
 
     async function submitAuth() {
       const raw = document.getElementById("authUsername").value.trim();
+      const pwd = document.getElementById("authPassword").value;
       if (!validateUsernameLive(raw, "authError")) {
         if (!raw) document.getElementById("authError").textContent = "Enter a username first.";
         return;
       }
+      if (pwd.length < 4) {
+        document.getElementById("authError").textContent = "Password must be at least 4 characters.";
+        return;
+      }
       try {
-        await api("/api/auth", { username: raw, mode: authMode });
+        await api("/api/auth", { username: raw, password: pwd, mode: authMode });
+        document.getElementById("authPassword").value = "";
         document.getElementById("authModal").classList.add("hidden");
+        lastSyncSignature = "";
         await syncNow();
       } catch (err) {
         document.getElementById("authError").textContent = err.message;
@@ -415,9 +499,11 @@
       if (currentKind !== kind || currentTarget !== target) {
         cancelReply();
         cancelEdit();
+        closeMentionPopup();
       }
       currentKind = kind;
       currentTarget = target;
+      lastSyncSignature = "";
       document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
       if (kind === "friends") document.getElementById("navFriends").classList.add("active");
       if (kind === "bulletin") document.getElementById("navBulletin").classList.add("active");
@@ -429,6 +515,7 @@
       if (!appState?.me) return;
       const me = appState.me;
       document.getElementById("profUsername").value = me.username || "";
+      document.getElementById("profNewPassword").value = "";
       document.getElementById("profStatus").value = me.status || "online";
       document.getElementById("profCustomStatus").value = me.custom_status || "";
       document.getElementById("profPronouns").value = me.pronouns || "";
@@ -450,6 +537,7 @@
       try {
         await api("/api/profile", {
           username: uname,
+          new_password: document.getElementById("profNewPassword").value,
           status: document.getElementById("profStatus").value,
           custom_status: document.getElementById("profCustomStatus").value.trim(),
           pronouns: document.getElementById("profPronouns").value.trim(),
@@ -457,47 +545,118 @@
           bio: document.getElementById("profBio").value.trim(),
           banner_color: document.getElementById("profBanner").value,
         });
+        document.getElementById("profNewPassword").value = "";
         document.getElementById("profSaved").textContent = "Profile updated.";
+        lastSyncSignature = "";
         await syncNow();
       } catch (err) {
         document.getElementById("profError").textContent = err.message;
       }
     }
 
-    async function sendFriendReq() {
-      const input = document.getElementById("friendSearchInput");
-      const feedback = document.getElementById("friendFeedback");
-      const val = input.value.trim();
-      if (!val) { feedback.className = "err-text"; feedback.textContent = "Type an exact username."; return; }
+    async function downloadBackup() {
       try {
-        await api("/api/friends/request", { username: val });
-        feedback.className = "ok-text";
-        feedback.textContent = `Friend request sent to @${val}.`;
-        input.value = "";
+        const data = await api("/api/backup/export");
+        const blob = new Blob([JSON.stringify(data.backup, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `schrewizium-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        document.getElementById("profSaved").textContent = "Backup JSON downloaded.";
+      } catch (err) {
+        document.getElementById("profError").textContent = err.message;
+      }
+    }
+
+    async function uploadBackup(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        await api("/api/backup/import", { backup: parsed });
+        document.getElementById("profSaved").textContent = "Database restored from backup!";
+        lastSyncSignature = "";
         await syncNow();
       } catch (err) {
-        feedback.className = "err-text";
-        feedback.textContent = err.message;
+        document.getElementById("profError").textContent = err.message || "Invalid JSON file.";
+      }
+      event.target.value = "";
+    }
+
+    async function sendFriendReq(explicitUsername = null) {
+      const input = document.getElementById("friendSearchInput");
+      const feedback = document.getElementById("friendFeedback");
+      const val = (explicitUsername || input?.value || "").trim();
+      if (!val) {
+        if (feedback) { feedback.className = "err-text"; feedback.textContent = "Type an exact username."; }
+        return;
+      }
+      try {
+        await api("/api/friends/request", { username: val });
+        if (feedback) { feedback.className = "ok-text"; feedback.textContent = `Friend request sent to @${val}.`; }
+        if (!explicitUsername && input) input.value = "";
+        lastSyncSignature = "";
+        await syncNow();
+      } catch (err) {
+        if (feedback) { feedback.className = "err-text"; feedback.textContent = err.message; }
       }
     }
 
     async function respondFriend(userId, action) {
       await api("/api/friends/respond", { user_id: userId, action });
+      lastSyncSignature = "";
       await syncNow();
     }
 
-    async function promptCreateGC() {
-      const name = prompt("Group chat name:");
-      if (!name || !name.trim()) return;
-      const res = await api("/api/gcs/create", { name: name.trim(), is_public: true });
+    function openGCModal() {
+      document.getElementById("gcNameInput").value = "";
+      document.getElementById("gcPublicCheck").checked = true;
+      toggleGCMemberPicker();
+      const box = document.getElementById("gcFriendCheckboxes");
+      const friends = appState?.friends || [];
+      box.innerHTML = friends.length
+        ? friends.map(f => `
+            <label class="row" style="font-size:13px; padding:4px 6px; background:var(--bg-input); border-radius:6px;">
+              <input type="checkbox" value="${f.id}" class="gc-friend-chk" />
+              <span>@${esc(f.username)}</span>
+            </label>
+          `).join("")
+        : `<span style="font-size:12px; color:var(--text-muted);">Add friends first to create a private group.</span>`;
+      document.getElementById("gcModal").classList.remove("hidden");
+    }
+    function closeGCModal() {
+      document.getElementById("gcModal").classList.add("hidden");
+    }
+    function toggleGCMemberPicker() {
+      const isPub = document.getElementById("gcPublicCheck").checked;
+      document.getElementById("gcMemberPicker").classList.toggle("hidden", isPub);
+    }
+    async function submitCreateGC() {
+      const name = document.getElementById("gcNameInput").value.trim();
+      if (!name) return;
+      const isPublic = document.getElementById("gcPublicCheck").checked;
+      const members = Array.from(document.querySelectorAll(".gc-friend-chk:checked")).map(c => c.value);
+      const res = await api("/api/gcs/create", { name, is_public: isPublic, members });
+      closeGCModal();
       if (res.gc_id) switchView("gc", res.gc_id);
       else await syncNow();
+    }
+
+    function jumpToMessage(msgId) {
+      const el = document.getElementById("msg_" + msgId);
+      if (!el) return;
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.classList.add("flash-highlight");
+      setTimeout(() => el.classList.remove("flash-highlight"), 1400);
     }
 
     function startReply(msgId, authorName, text) {
       cancelEdit();
       replyingTo = { id: msgId, author_username: authorName, text };
-      document.getElementById("replyLabel").textContent = `Replying to @${authorName}: ${text.slice(0, 60)}`;
+      document.getElementById("replyLabel").textContent = `Replying to @${authorName}: ${text.slice(0, 70)}`;
       document.getElementById("replyBar").classList.remove("hidden");
       document.getElementById("chatInput").focus();
     }
@@ -521,7 +680,87 @@
       document.getElementById("composerSubmitBtn").textContent = "Send";
     }
 
+    function closeMentionPopup() {
+      mentionCandidates = [];
+      mentionSelectedIdx = 0;
+      document.getElementById("mentionPopup").classList.add("hidden");
+    }
+
+    function updateMentionPopup() {
+      const inp = document.getElementById("chatInput");
+      const popup = document.getElementById("mentionPopup");
+      if (!inp || !appState) return;
+
+      const cursor = inp.selectionStart ?? inp.value.length;
+      const beforeCursor = inp.value.slice(0, cursor);
+      const match = beforeCursor.match(/(?:^|\s)@([a-zA-Z0-9_.]*)$/);
+      if (!match) {
+        closeMentionPopup();
+        return;
+      }
+
+      const prefix = match[1].toLowerCase();
+      const pool = (appState.active?.members?.length ? appState.active.members : Object.values(appState.users || {}));
+      mentionCandidates = pool.filter(u => u.username.toLowerCase().startsWith(prefix)).slice(0, 8);
+
+      if (!mentionCandidates.length) {
+        closeMentionPopup();
+        return;
+      }
+
+      if (mentionSelectedIdx >= mentionCandidates.length) mentionSelectedIdx = 0;
+      popup.innerHTML = mentionCandidates.map((u, idx) => `
+        <div class="mention-item ${idx === mentionSelectedIdx ? 'selected' : ''}" onmousedown="event.preventDefault(); applyMention('${esc(u.username)}')">
+          <strong>@${esc(u.username)}</strong>
+          <span style="font-size:11px; color:var(--text-muted);">${esc(u.status)}${u.custom_status ? ' • ' + esc(u.custom_status) : ''}</span>
+        </div>
+      `).join("");
+      popup.classList.remove("hidden");
+    }
+
+    function applyMention(username) {
+      const inp = document.getElementById("chatInput");
+      const cursor = inp.selectionStart ?? inp.value.length;
+      const before = inp.value.slice(0, cursor);
+      const after = inp.value.slice(cursor);
+      const replaced = before.replace(/(^|\s)@[a-zA-Z0-9_.]*$/, `$1@${username} `);
+      inp.value = replaced + after;
+      inp.focus();
+      closeMentionPopup();
+    }
+
+    function handleComposerInput() {
+      updateMentionPopup();
+      notifyTyping();
+    }
+
     function handleComposerKey(e) {
+      const popupVisible = !document.getElementById("mentionPopup").classList.contains("hidden");
+      if (popupVisible && mentionCandidates.length) {
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          mentionSelectedIdx = (mentionSelectedIdx + 1) % mentionCandidates.length;
+          updateMentionPopup();
+          return;
+        }
+        if (e.key === "ArrowUp") {
+          e.preventDefault();
+          mentionSelectedIdx = (mentionSelectedIdx - 1 + mentionCandidates.length) % mentionCandidates.length;
+          updateMentionPopup();
+          return;
+        }
+        if (e.key === "Enter" || e.key === "Tab") {
+          e.preventDefault();
+          applyMention(mentionCandidates[mentionSelectedIdx].username);
+          return;
+        }
+        if (e.key === "Escape") {
+          e.preventDefault();
+          closeMentionPopup();
+          return;
+        }
+      }
+
       if (e.key === "Escape") {
         cancelReply();
         cancelEdit();
@@ -544,12 +783,38 @@
     async function submitChatAction() {
       const input = document.getElementById("chatInput");
       const text = input.value.trim();
-      if (!text) return;
+      if (!text || !appState?.me) return;
 
-      if (editingMsg) {
-        const targetMsgId = editingMsg.id;
-        cancelEdit();
-        input.value = "";
+      const isEdit = Boolean(editingMsg);
+      const targetMsgId = isEdit ? editingMsg.id : null;
+      const replySnapshot = !isEdit && replyingTo ? { ...replyingTo } : null;
+
+      if (isEdit) cancelEdit();
+      else cancelReply();
+      closeMentionPopup();
+      input.value = "";
+
+      if (appState.active && (currentKind === "gc" || currentKind === "dm")) {
+        appState.active.messages = appState.active.messages || [];
+        if (isEdit) {
+          const m = appState.active.messages.find(x => x.id === targetMsgId);
+          if (m) { m.text = text; m.edited = true; }
+        } else {
+          appState.active.messages.push({
+            id: "temp_" + Date.now(),
+            author_id: appState.me.id,
+            author_username: appState.me.username,
+            text,
+            ts: Date.now(),
+            edited: false,
+            reply_to: replySnapshot,
+            mentions: [],
+          });
+        }
+        renderUI(appState);
+      }
+
+      if (isEdit) {
         await api("/api/messages/edit", {
           kind: currentKind,
           target_id: currentTarget,
@@ -557,26 +822,29 @@
           text,
         });
       } else {
-        const replyId = replyingTo ? replyingTo.id : null;
-        cancelReply();
-        input.value = "";
         await api("/api/messages/send", {
           kind: currentKind,
           target_id: currentTarget,
           text,
-          reply_to: replyId,
+          reply_to: replySnapshot ? replySnapshot.id : null,
         });
       }
+      lastSyncSignature = "";
       await syncNow();
     }
 
     async function deleteChatMessage(msgId) {
       if (editingMsg && editingMsg.id === msgId) cancelEdit();
+      if (appState?.active?.messages) {
+        appState.active.messages = appState.active.messages.filter(m => m.id !== msgId);
+        renderUI(appState);
+      }
       await api("/api/messages/delete", {
         kind: currentKind,
         target_id: currentTarget,
         msg_id: msgId,
       });
+      lastSyncSignature = "";
       await syncNow();
     }
 
@@ -596,7 +864,16 @@
       const title = document.getElementById("bulTitle").value.trim();
       const body = document.getElementById("bulBody").value.trim();
       if (!title || !body) return;
+      document.getElementById("bulTitle").value = "";
+      document.getElementById("bulBody").value = "";
       await api("/api/bulletin/post", { title, body });
+      lastSyncSignature = "";
+      await syncNow();
+    }
+
+    async function deleteBulletinPost(postId) {
+      await api("/api/bulletin/delete", { post_id: postId });
+      lastSyncSignature = "";
       await syncNow();
     }
 
@@ -604,12 +881,16 @@
       const q = document.getElementById("pollQ").value.trim();
       const opts = document.getElementById("pollOpts").value.split(",").map(s => s.trim()).filter(Boolean);
       if (!q || opts.length < 2) return;
+      document.getElementById("pollQ").value = "";
+      document.getElementById("pollOpts").value = "";
       await api("/api/polls/create", { question: q, options: opts });
+      lastSyncSignature = "";
       await syncNow();
     }
 
     async function votePoll(pollId, optionId) {
       await api("/api/polls/vote", { poll_id: pollId, option_id: optionId });
+      lastSyncSignature = "";
       await syncNow();
     }
 
@@ -669,9 +950,15 @@
         document.getElementById("headerTitle").textContent = "Friends";
         composerWrap.classList.add("hidden");
         typingBar.classList.add("hidden");
+
+        const friendIds = new Set(data.friends.map(f => f.id));
+        const incomingIds = new Set(data.incoming.map(f => f.id));
+        const outgoingIds = new Set(data.outgoing.map(f => f.id));
+        const discoverUsers = users.filter(u => u.id !== me.id && !friendIds.has(u.id) && !incomingIds.has(u.id) && !outgoingIds.has(u.id));
+
         center.innerHTML = `
           <div class="card">
-            <h3 style="margin-bottom:8px;">Add Friend (Server Verified)</h3>
+            <h3 style="margin-bottom:8px;">Add Friend by Username</h3>
             <div class="row">
               <input id="friendSearchInput" style="flex:1;" placeholder="Enter exact registered username..." onkeydown="if(event.key==='Enter') sendFriendReq()" />
               <button class="btn-primary" onclick="sendFriendReq()">Send Request</button>
@@ -694,7 +981,12 @@
           ${data.outgoing.length ? `
             <div class="card">
               <h4 style="margin-bottom:8px;">Outgoing Pending (${data.outgoing.length})</h4>
-              ${data.outgoing.map(u => `<div style="padding:4px 0; color:var(--text-muted);">@${esc(u.username)} (pending)</div>`).join("")}
+              ${data.outgoing.map(u => `
+                <div class="row" style="justify-content:space-between; padding:5px 0;">
+                  <span style="color:var(--text-muted);">@${esc(u.username)} (pending)</span>
+                  <button class="btn-ghost" onclick="respondFriend('${u.id}','cancel')">Cancel</button>
+                </div>
+              `).join("")}
             </div>` : ""}
           <div class="card">
             <h4 style="margin-bottom:8px;">Friends (${data.friends.length})</h4>
@@ -704,10 +996,26 @@
                   <strong>@${esc(f.username)}</strong>
                   <span style="font-size:12px; color:var(--text-muted); margin-left:6px;">${esc(f.status)}${f.custom_status ? ' • ' + esc(f.custom_status) : ''}</span>
                 </div>
-                <button class="btn-primary" onclick="switchView('dm','${f.id}')">Message</button>
+                <div class="row">
+                  <button class="btn-primary" onclick="switchView('dm','${f.id}')">Message</button>
+                  <button class="btn-ghost" onclick="respondFriend('${f.id}','remove')">Remove</button>
+                </div>
               </div>
             `).join("") : `<p style="color:var(--text-muted); font-size:13px;">No friends added yet.</p>`}
           </div>
+          ${discoverUsers.length ? `
+            <div class="card">
+              <h4 style="margin-bottom:8px;">Registered Users (${discoverUsers.length})</h4>
+              ${discoverUsers.map(u => `
+                <div class="row" style="justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border);">
+                  <div>
+                    <strong>@${esc(u.username)}</strong>
+                    ${u.custom_status ? `<span style="font-size:12px; color:var(--text-muted); margin-left:6px;">${esc(u.custom_status)}</span>` : ""}
+                  </div>
+                  <button class="btn-ghost" onclick="sendFriendReq('${esc(u.username)}')">Add Friend</button>
+                </div>
+              `).join("")}
+            </div>` : ""}
         `;
       } else if (currentKind === "gc" || currentKind === "dm") {
         const gcObj = data.gcs.find(g => g.id === currentTarget);
@@ -726,11 +1034,17 @@
           const isMentioned = Array.isArray(m.mentions) && m.mentions.includes(me.id);
           const timeStr = m.ts ? new Date(m.ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
           const replyHtml = m.reply_to
-            ? `<div class="reply-quote">↩ <strong>@${esc(m.reply_to.author_username)}</strong>: ${esc(m.reply_to.text)}</div>`
+            ? `<div class="reply-quote" onclick="jumpToMessage('${esc(m.reply_to.id)}')" title="Click to jump to replied message">
+                 ↩ <strong>@${esc(m.reply_to.author_username)}</strong>: ${esc(m.reply_to.text)}
+               </div>`
             : "";
 
+          const avatarHtml = sender.avatar
+            ? `<img src="${esc(sender.avatar)}" class="avatar" onerror="this.outerHTML='<div class=\\'avatar\\'>${esc(sender.username[0].toUpperCase())}</div>'" />`
+            : `<div class="avatar">${esc(sender.username[0].toUpperCase())}</div>`;
+
           return `
-            <div class="msg-row ${isMentioned ? 'mentioned' : ''}">
+            <div id="msg_${m.id}" class="msg-row ${isMentioned ? 'mentioned' : ''}">
               <div class="msg-actions">
                 <button class="msg-act-btn" onclick="startReply('${m.id}', '${esc(sender.username)}', ${JSON.stringify(m.text)})">Reply</button>
                 ${isMine ? `
@@ -738,7 +1052,7 @@
                   <button class="msg-act-btn del" onclick="deleteChatMessage('${m.id}')">Delete</button>
                 ` : ""}
               </div>
-              <div class="avatar">${esc(sender.username[0].toUpperCase())}</div>
+              ${avatarHtml}
               <div class="msg-body">
                 ${replyHtml}
                 <div class="msg-meta">
@@ -758,17 +1072,22 @@
         typingBar.classList.add("hidden");
         center.innerHTML = `
           <div class="card" style="display:flex; flex-direction:column; gap:8px;">
-            <input id="bulTitle" placeholder="Announcement title..." />
-            <textarea id="bulBody" rows="2" placeholder="Write post..."></textarea>
+            <input id="bulTitle" placeholder="Announcement title..." maxlength="100" />
+            <textarea id="bulBody" rows="2" placeholder="Write announcement..." maxlength="1000"></textarea>
             <button class="btn-primary" style="align-self:flex-start;" onclick="createBulletin()">Post Bulletin</button>
           </div>
-          ${(data.bulletin || []).map(b => `
+          ${(data.bulletin || []).length ? (data.bulletin || []).map(b => `
             <div class="card">
-              <strong>${esc(b.title)}</strong>
-              <div style="font-size:11px; color:var(--text-muted); margin:3px 0 6px;">by @${esc(b.author_username || "user")}</div>
-              <p style="font-size:14px;">${esc(b.body)}</p>
+              <div class="row" style="justify-content:space-between;">
+                <strong>${esc(b.title)}</strong>
+                ${b.author_id === me.id ? `<button class="btn-danger" onclick="deleteBulletinPost('${b.id}')">Delete</button>` : ""}
+              </div>
+              <div style="font-size:11px; color:var(--text-muted); margin:3px 0 6px;">
+                by @${esc(b.author_username || "user")} ${b.ts ? '• ' + new Date(b.ts).toLocaleString() : ''}
+              </div>
+              <p style="font-size:14px; white-space:pre-wrap;">${esc(b.body)}</p>
             </div>
-          `).join("")}
+          `).join("") : `<p style="color:var(--text-muted); font-size:13px;">No bulletin posts yet.</p>`}
         `;
       } else if (currentKind === "polls") {
         document.getElementById("headerTitle").textContent = "Polls";
@@ -776,20 +1095,33 @@
         typingBar.classList.add("hidden");
         center.innerHTML = `
           <div class="card" style="display:flex; flex-direction:column; gap:8px;">
-            <input id="pollQ" placeholder="Poll question..." />
-            <input id="pollOpts" placeholder="Options separated by commas (e.g. Yes, No)" />
+            <input id="pollQ" placeholder="Ask a poll question..." maxlength="160" />
+            <input id="pollOpts" placeholder="Options separated by commas (e.g. Yes, No, Maybe)" />
             <button class="btn-primary" style="align-self:flex-start;" onclick="createPoll()">Create Poll</button>
           </div>
-          ${(data.polls || []).map(p => `
-            <div class="card">
-              <strong style="display:block; margin-bottom:8px;">${esc(p.question)}</strong>
-              ${(p.options || []).map(opt => `
-                <button class="btn-ghost" style="display:block; width:100%; text-align:left; margin-bottom:6px;" onclick="votePoll('${p.id}', '${opt.id}')">
-                  ${esc(opt.label)} — <strong>${(opt.votes || []).length} votes</strong>
-                </button>
-              `).join("")}
-            </div>
-          `).join("")}
+          ${(data.polls || []).length ? (data.polls || []).map(p => {
+            const totalVotes = (p.options || []).reduce((acc, o) => acc + (o.votes || []).length, 0);
+            return `
+              <div class="card">
+                <strong style="display:block; margin-bottom:2px;">${esc(p.question)}</strong>
+                <div style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">by @${esc(p.author_username || "user")} • ${totalVotes} total vote${totalVotes === 1 ? '' : 's'}</div>
+                ${(p.options || []).map(opt => {
+                  const count = (opt.votes || []).length;
+                  const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+                  const voted = (opt.votes || []).includes(me.id);
+                  return `
+                    <div class="poll-bar-wrap" onclick="votePoll('${p.id}', '${opt.id}')">
+                      <div class="poll-bar-fill" style="width:${pct}%;"></div>
+                      <div class="poll-bar-content">
+                        <span>${voted ? '✓ ' : ''}<strong>${esc(opt.label)}</strong></span>
+                        <span style="color:var(--text-muted);">${count} (${pct}%)</span>
+                      </div>
+                    </div>
+                  `;
+                }).join("")}
+              </div>
+            `;
+          }).join("") : `<p style="color:var(--text-muted); font-size:13px;">No polls created yet.</p>`}
         `;
       }
     }
@@ -810,13 +1142,29 @@
             body: JSON.stringify({ kind: currentKind, target_id: currentTarget }),
           });
         }
+
+        const sig = JSON.stringify({
+          me: data.me,
+          users: Object.values(data.users || {}).map(u => u.id + u.username + u.status + u.custom_status + u.avatar + u.bio + u.pronouns),
+          friends: data.friends?.map(u => u.id + u.status),
+          incoming: data.incoming?.map(u => u.id),
+          outgoing: data.outgoing?.map(u => u.id),
+          dms: data.dms?.map(d => d.user.id + d.unread),
+          gcs: data.gcs?.map(g => g.id + g.member_count + g.mention_unread),
+          msgs: data.active?.messages?.map(m => m.id + m.text + m.edited),
+          typing: data.active?.typing,
+          bulletin: data.bulletin?.map(b => b.id),
+          polls: data.polls?.map(p => p.id + p.options?.map(o => o.votes?.length).join(",")),
+        });
+        if (sig === lastSyncSignature) return;
+        lastSyncSignature = sig;
         renderUI(data);
       } catch (e) {}
     }
 
     applySavedTheme();
     syncNow();
-    setInterval(syncNow, 2500);
+    setInterval(syncNow, 1500);
   </script>
 </body>
 </html>
